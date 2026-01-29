@@ -40,7 +40,14 @@ Do not explain why an answer is correct. Only state the answer itself.""")
     return "\n".join(prompt)
 
 
-def llm_provider():
+def llm_provider(default=None):
+    llm_providers = ["gemini", "groq"]
+
+    if default is not None:
+        return default
+    elif default not in llm_providers:
+        pass
+
     print("API Available\n1.Gemini\n2.LLama(Groq)")
     num = int(input("Choose provider: "))
     match num:
