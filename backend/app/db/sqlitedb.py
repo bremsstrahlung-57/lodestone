@@ -20,11 +20,10 @@ class SQLiteDB:
     """All functions related to SQLite Database storing user docs and all other important metadata"""
 
     def __init__(self) -> None:
+        make_cache_folder()
         self.connection = sqlite3.connect(DATA_FILE_PATH, check_same_thread=False)
-        self.cursor = self.connection.cursor()
-        self.now = datetime.now()
 
-        self.cursor.execute("""
+        self.connection.execute("""
         CREATE TABLE IF NOT EXISTS documents (
         doc_id TEXT PRIMARY KEY,
         title TEXT,
@@ -33,16 +32,21 @@ class SQLiteDB:
         total_chunks INTEGER,
         created_at TEXT
         );""")
+        self.connection.commit()
 
     def insert_doc_ib_db(
-        self, doc_id: str, title: str, content: str, source: str, total_chunks: int
+        self,
+        doc_id: str,
+        title: str,
+        content: str,
+        source: str,
+        total_chunks: int,
     ) -> None:
         """Save full doc and other metadata in the SQLite DB"""
         make_cache_folder()
-        _doc_id = doc_id
-        iso_format = self.now.strftime("%Y-%m-%d %H:%M:%S")
+        iso_format = iso_format = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        self.cursor.execute(
+        self.connection.execute(
             """
         INSERT OR REPLACE INTO documents (doc_id, title, content, source, total_chunks, created_at)
         VALUES(?, ?, ?, ?, ?, ?)
@@ -54,7 +58,5 @@ class SQLiteDB:
 
     def read_from_cache(self) -> list:
         """Get all the rows from SQLite DB"""
-        self.cursor.execute("SELECT * FROM documents")
-        rows = self.cursor.fetchall()
-
-        return rows
+        cursor = self.connection.execute("SELECT * FROM documents")
+        return cursor.fetchall()

@@ -3,9 +3,8 @@ from tqdm import tqdm
 from app.db.qdrant import search_docs
 from app.ingest.ingestion import ingest_file
 from app.llm.generation import LLMGeneration, llm_provider, prompt_generation
-from app.retrieval.docs_recall import RecallDocs
+from app.retrieval.docs_recall import Recall
 from app.retrieval.retrieve import (
-    GenerateLLMContext,
     llm_context_builder,
     refine_results,
     retrieve_data,
@@ -81,10 +80,15 @@ class Debug:
         return llm_context_builder(self.query, ref_result)
 
     def debug_GenerateLLMContext(self):
-        return GenerateLLMContext(self.query)
+        searched_docs = search_docs(self.query, self.limit, self.k)
+        refined_result = refine_results(searched_docs)
+        generated_context = llm_context_builder(self.query, refined_result)
+        return generated_context
 
     def debug_prompt_generation(self):
-        return prompt_generation(self.query)
+        searched_docs = search_docs(self.query, self.limit, self.k)
+        refined_result = refine_results(searched_docs)
+        return prompt_generation(self.query, refined_result)
 
     def debug_llm_generation(self):
         llm_gen = LLMGeneration()
@@ -92,13 +96,14 @@ class Debug:
         prompt = self.debug_prompt_generation()
         return llm_gen.generate(provider, prompt)
 
-    def debug_RecallDocs(self):
-        return RecallDocs(
+    def debug_Recall(self):
+        provider = llm_provider()
+        return Recall(
             query=self.query,
+            mode="ai",
             limit=self.limit,
             k=self.k,
-            full_docs=False,
-            ai_resp=True,
+            provider=provider,
         )
 
 
@@ -114,7 +119,7 @@ def main():
     # print(debug_instance.debug_llm_context_builder())
     # print(debug_instance.debug_GenerateLLMContext())
     # print(debug_instance.debug_llm_generation())
-    print(debug_instance.debug_RecallDocs())
+    print(debug_instance.debug_Recall())
 
 
 if __name__ == "__main__":

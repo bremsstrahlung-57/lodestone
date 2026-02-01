@@ -1,5 +1,8 @@
+import time
+
+from app.llm.client import LLMResponse
 from app.llm.factory import LLMFactory
-from app.retrieval.retrieve import GenerateLLMContext
+from app.retrieval.retrieve import llm_context_builder
 
 
 class LLMGeneration:
@@ -9,14 +12,22 @@ class LLMGeneration:
         prompt: str,
         api_key: str | None = None,
         model: str | None = None,
-    ):
-        llm = LLMFactory.create(provider=provider, api_key=api_key, model=model)
+    ) -> LLMResponse:
+        llm = LLMFactory.create(
+            provider=provider,
+            api_key=api_key,
+            model=model,
+        )
 
-        return llm.generate(prompt)
+        start = time.perf_counter()
+        raw = llm.generate(prompt)
+        latency_ms = (time.perf_counter() - start) * 1000
+
+        return llm.parse_response(raw, latency_ms)
 
 
-def prompt_generation(query):
-    context = GenerateLLMContext(query)
+def prompt_generation(query, refined_result):
+    context = llm_context_builder(query, refined_result)
     prompt = [
         "Query:",
         query,

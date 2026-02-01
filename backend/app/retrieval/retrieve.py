@@ -101,10 +101,3 @@ def llm_context_builder(query, refined_result):
         )
 
     return llm_context
-
-
-def GenerateLLMContext(query, limit=5, k=3):
-    searched_docs = search_docs(query, limit, k)
-    refined_result = refine_results(searched_docs)
-    generated_context = llm_context_builder(query, refined_result)
-    return generated_context
