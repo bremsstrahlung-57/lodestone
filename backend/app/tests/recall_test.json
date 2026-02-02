@@ -1,0 +1,250 @@
+{
+    "test_cases": [
+        {
+            "test_id": "retrieval_basic",
+            "description": "Basic retrieval mode test - should return search results without AI answer",
+            "input": {
+                "query": "potion crafting",
+                "mode": "retrieval",
+                "limit": 5,
+                "k": 3,
+                "provider": null
+            },
+            "expected": {
+                "mode": "retrieval",
+                "ai_answer": null,
+                "provider": null,
+                "latency_ms": null,
+                "results_should_exist": true,
+                "results_max_count": 5
+            }
+        },
+        {
+            "test_id": "retrieval_custom_limit",
+            "description": "Retrieval mode with custom limit of 10",
+            "input": {
+                "query": "rpg games",
+                "mode": "retrieval",
+                "limit": 10,
+                "k": 5,
+                "provider": null
+            },
+            "expected": {
+                "mode": "retrieval",
+                "ai_answer": null,
+                "provider": null,
+                "latency_ms": null,
+                "results_should_exist": true,
+                "results_max_count": 10
+            }
+        },
+        {
+            "test_id": "retrieval_small_limit",
+            "description": "Retrieval mode with small limit of 1",
+            "input": {
+                "query": "souls like game set in japan",
+                "mode": "retrieval",
+                "limit": 1,
+                "k": 1,
+                "provider": null
+            },
+            "expected": {
+                "mode": "retrieval",
+                "ai_answer": null,
+                "provider": null,
+                "latency_ms": null,
+                "results_should_exist": true,
+                "results_max_count": 1
+            }
+        },
+        {
+            "test_id": "ai_mode_gemini",
+            "description": "AI mode with Gemini provider - should return AI answer",
+            "input": {
+                "query": "What are RPG games?",
+                "mode": "ai",
+                "limit": 5,
+                "k": 3,
+                "provider": "gemini"
+            },
+            "expected": {
+                "mode": "ai",
+                "ai_answer_should_exist": true,
+                "provider": "gemini",
+                "latency_ms_should_exist": true,
+                "llm_fields": [
+                    "prompt_tokens",
+                    "completion_tokens",
+                    "finish_reason"
+                ],
+                "results_should_exist": true
+            }
+        },
+        {
+            "test_id": "ai_mode_groq",
+            "description": "AI mode with Groq provider - should return AI answer",
+            "input": {
+                "query": "Tell me about potion crafting mechanics",
+                "mode": "ai",
+                "limit": 5,
+                "k": 3,
+                "provider": "groq"
+            },
+            "expected": {
+                "mode": "ai",
+                "ai_answer_should_exist": true,
+                "provider": "groq",
+                "latency_ms_should_exist": true,
+                "llm_fields": [
+                    "prompt_tokens",
+                    "completion_tokens",
+                    "finish_reason"
+                ],
+                "results_should_exist": true
+            }
+        },
+        {
+            "test_id": "ai_mode_no_provider",
+            "description": "AI mode without provider - should return results without AI answer",
+            "input": {
+                "query": "What is a souls-like game?",
+                "mode": "ai",
+                "limit": 5,
+                "k": 3,
+                "provider": null
+            },
+            "expected": {
+                "mode": "ai",
+                "ai_answer": null,
+                "provider": null,
+                "latency_ms": null,
+                "results_should_exist": true,
+                "llm_should_not_exist": true
+            }
+        },
+        {
+            "test_id": "retrieval_empty_query",
+            "description": "Retrieval mode with empty query string",
+            "input": {
+                "query": "",
+                "mode": "retrieval",
+                "limit": 5,
+                "k": 3,
+                "provider": null
+            },
+            "expected": {
+                "mode": "retrieval",
+                "ai_answer": null,
+                "provider": null,
+                "latency_ms": null,
+                "results_type": "list"
+            }
+        },
+        {
+            "test_id": "retrieval_long_query",
+            "description": "Retrieval mode with a longer, more detailed query",
+            "input": {
+                "query": "I am looking for a game that has crafting mechanics where you can create potions and has RPG elements",
+                "mode": "retrieval",
+                "limit": 5,
+                "k": 3,
+                "provider": null
+            },
+            "expected": {
+                "mode": "retrieval",
+                "ai_answer": null,
+                "provider": null,
+                "latency_ms": null,
+                "results_should_exist": true,
+                "results_max_count": 5
+            }
+        },
+        {
+            "test_id": "retrieval_high_k_value",
+            "description": "Retrieval mode with high k value for search",
+            "input": {
+                "query": "action games",
+                "mode": "retrieval",
+                "limit": 5,
+                "k": 10,
+                "provider": null
+            },
+            "expected": {
+                "mode": "retrieval",
+                "ai_answer": null,
+                "provider": null,
+                "latency_ms": null,
+                "results_should_exist": true,
+                "results_max_count": 5
+            }
+        },
+        {
+            "test_id": "result_structure_validation",
+            "description": "Validate that each result contains required fields",
+            "input": {
+                "query": "rpg",
+                "mode": "retrieval",
+                "limit": 3,
+                "k": 3,
+                "provider": null
+            },
+            "expected": {
+                "mode": "retrieval",
+                "result_fields": [
+                    "doc_id",
+                    "title",
+                    "source",
+                    "score",
+                    "snippets"
+                ],
+                "results_should_exist": true
+            }
+        },
+        {
+            "test_id": "ai_mode_large_limit",
+            "description": "AI mode with larger context from more documents",
+            "input": {
+                "query": "Explain the combat system",
+                "mode": "ai",
+                "limit": 10,
+                "k": 5,
+                "provider": "gemini"
+            },
+            "expected": {
+                "mode": "ai",
+                "ai_answer_should_exist": true,
+                "provider": "gemini",
+                "latency_ms_should_exist": true,
+                "results_max_count": 10
+            }
+        },
+        {
+            "test_id": "query_special_characters",
+            "description": "Query containing special characters",
+            "input": {
+                "query": "game with 100% completion",
+                "mode": "retrieval",
+                "limit": 5,
+                "k": 3,
+                "provider": null
+            },
+            "expected": {
+                "mode": "retrieval",
+                "ai_answer": null,
+                "provider": null,
+                "latency_ms": null,
+                "results_type": "list"
+            }
+        }
+    ],
+    "metadata": {
+        "function": "Recall",
+        "module": "app.retrieval.docs_recall",
+        "description": "Test cases for the Recall function which performs document retrieval and optional AI-powered answer generation",
+        "modes": {
+            "retrieval": "Returns search results without AI processing",
+            "ai": "Returns search results with AI-generated answer from specified provider"
+        },
+        "providers": ["gemini", "groq"]
+    }
+}

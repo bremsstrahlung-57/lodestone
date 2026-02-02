@@ -4,6 +4,7 @@ import pytest
 
 from app.db.qdrant import search_docs
 
+
 def load_cases():
     with open("app/tests/eval.json", "r") as f:
         return json.load(f)
