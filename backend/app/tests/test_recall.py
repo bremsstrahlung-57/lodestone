@@ -97,7 +97,7 @@ def test_recall(case):
 )
 def test_recall_returns_correct_structure(mode):
     """Test that Recall returns the expected base structure"""
-    provider = "gemini" if mode == "ai" else None
+    provider = "groq" if mode == "ai" else None
 
     result = Recall(
         query="test query",

@@ -1,3 +1,4 @@
+import logging
 import statistics
 import uuid
 
@@ -11,6 +12,8 @@ from app.core.settings import settings
 from app.db.sqlitedb import SQLiteDB
 from app.embeddings.minilm import embed
 
+logger = logging.getLogger(__name__)
+
 _client: QdrantClient | None = None
 _collection_checked = False
 doc_database = SQLiteDB()
@@ -21,7 +24,9 @@ def get_qdrant_client() -> QdrantClient:
     global _client, _collection_checked
 
     if _client is None:
+        logger.info("creating Qdrant client", extra={"url": settings.qdrant_url})
         _client = QdrantClient(url=settings.qdrant_url)
+        logger.info("Qdrant client created")
 
     if not _collection_checked:
         ensure_collection_exists(
@@ -35,16 +40,28 @@ def get_qdrant_client() -> QdrantClient:
 
 
 def ping_qdrant() -> None:
-    client = get_qdrant_client()
+    logger.info("pinging Qdrant")
+    try:
+        get_qdrant_client()
+        logger.info("Qdrant ping successful")
+    except Exception:
+        logger.exception("Qdrant ping failed")
+        raise
 
 
 def _assert_embedding_dim():
     """Check for right dimensions"""
+    logger.info("asserting embedding dimensions", extra={"expected": EMBEDDING_DIM})
     vec = embed("dim check")
     if len(vec) != EMBEDDING_DIM:
+        logger.error(
+            "embedding dim mismatch",
+            extra={"expected": EMBEDDING_DIM, "got": len(vec)},
+        )
         raise RuntimeError(
             f"Embedding dim mismatch: expected {EMBEDDING_DIM}, got {len(vec)}"
         )
+    logger.info("embedding dim check passed", extra={"dim": len(vec)})
 
 
 def ensure_collection_exists(
@@ -52,11 +69,20 @@ def ensure_collection_exists(
 ) -> None:
     try:
         client.get_collection(collection_name)
+        logger.debug("collection already exists", extra={"collection": collection_name})
         return
     except UnexpectedResponse as e:
         if e.status_code != 404:
+            logger.exception(
+                "unexpected error checking collection",
+                extra={"collection": collection_name},
+            )
             raise
 
+    logger.info(
+        "creating collection",
+        extra={"collection": collection_name, "vector_size": vector_size},
+    )
     client.create_collection(
         collection_name=collection_name,
         vectors_config=VectorParams(
@@ -64,10 +90,13 @@ def ensure_collection_exists(
             distance=Distance.COSINE,
         ),
     )
+    logger.info("collection created", extra={"collection": collection_name})
 
 
 def search_docs(query, limit=5, k=3):
     """Search for a query from the Vector DB"""
+    logger.info("searching docs", extra={"query": query, "limit": limit, "k": k})
+
     client: QdrantClient = get_qdrant_client()
     query_vector = embed(text=query)
 
@@ -76,6 +105,11 @@ def search_docs(query, limit=5, k=3):
         query=query_vector,
         limit=limit,
         with_vectors=False,
+    )
+
+    logger.debug(
+        "raw search results received",
+        extra={"points_returned": len(search_results.points)},
     )
 
     doc_score_map = {}
@@ -115,6 +149,11 @@ def search_docs(query, limit=5, k=3):
                         "score": score,
                     }
                 )
+
+    logger.debug(
+        "doc score map built",
+        extra={"unique_docs": len(doc_score_map)},
+    )
 
     doc_db = doc_database.read_from_cache()
     results = []
@@ -175,11 +214,24 @@ def search_docs(query, limit=5, k=3):
             results,
         )
     )
+
+    logger.info(
+        "search complete",
+        extra={
+            "query": query,
+            "total_matched": len(results),
+            "after_filtering": len(final_res),
+            "max_score": max_score,
+        },
+    )
+
     return final_res
 
 
 def ingest_data(docs):
     """Upsert data in Vector DB"""
+    logger.info("ingesting data into Qdrant", extra={"doc_count": len(docs)})
+
     client: QdrantClient = get_qdrant_client()
     points = []
     for doc in docs:
@@ -206,10 +258,20 @@ def ingest_data(docs):
         points=points,
     )
 
+    logger.info(
+        "data ingested successfully",
+        extra={"points_upserted": len(points), "collection": COLLECTION_NAME},
+    )
+
     return client.get_collection(COLLECTION_NAME)
 
 
 def fetch_chunk_by_ids(doc_id, chunk_ids):
+    logger.debug(
+        "fetching chunks by ids",
+        extra={"doc_id": doc_id, "chunk_ids": chunk_ids},
+    )
+
     client = get_qdrant_client()
 
     result = client.scroll(
@@ -230,4 +292,10 @@ def fetch_chunk_by_ids(doc_id, chunk_ids):
         limit=len(chunk_ids),
     )
     points, _ = result
+
+    logger.debug(
+        "chunks fetched",
+        extra={"doc_id": doc_id, "requested": len(chunk_ids), "returned": len(points)},
+    )
+
     return points

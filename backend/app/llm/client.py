@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
@@ -7,6 +8,8 @@ from google.genai import types
 from groq import Groq
 
 from app.core.settings import Settings
+
+logger = logging.getLogger(__name__)
 
 settings = Settings()
 DEFAULT_GEMINI_API_KEY = settings.gemini_api_key
@@ -65,27 +68,52 @@ class GeminiLLM(BaseLLM):
     def __init__(self, api_key: str, model: str):
         self.client = create_gemini_client(api_key)
         self.model = model
+        logger.info("gemini client initialized", extra={"model": model})
 
     def generate(self, prompt: str):
-        return self.client.models.generate_content(
-            model=self.model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-            ),
+        logger.debug(
+            "gemini generate called",
+            extra={"model": self.model, "prompt_len": len(prompt)},
         )
+        try:
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT,
+                ),
+            )
+            logger.debug("gemini generate succeeded")
+            return response
+        except Exception:
+            logger.exception("gemini generate failed", extra={"model": self.model})
+            raise
 
     def parse_response(self, raw, latency_ms: float) -> LLMResponse:
         usage = getattr(raw, "usage_metadata", None)
+        prompt_tokens = getattr(usage, "prompt_token_count", None)
+        completion_tokens = getattr(usage, "candidates_token_count", None)
+        finish_reason = raw.candidates[0].finish_reason if raw.candidates else None
+
+        logger.info(
+            "gemini response parsed",
+            extra={
+                "model": self.model,
+                "latency_ms": round(latency_ms, 2),
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "finish_reason": finish_reason,
+            },
+        )
 
         return LLMResponse(
             text=raw.text,
             provider="gemini",
             model=self.model,
             latency_ms=latency_ms,
-            prompt_tokens=getattr(usage, "prompt_token_count", None),
-            completion_tokens=getattr(usage, "candidates_token_count", None),
-            finish_reason=raw.candidates[0].finish_reason if raw.candidates else None,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            finish_reason=finish_reason,
         )
 
 
@@ -93,25 +121,50 @@ class GroqLLM(BaseLLM):
     def __init__(self, api_key: str, model: str):
         self.client = create_groq_client(api_key)
         self.model = model
+        logger.info("groq client initialized", extra={"model": model})
 
     def generate(self, prompt: str):
-        return self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
+        logger.debug(
+            "groq generate called",
+            extra={"model": self.model, "prompt_len": len(prompt)},
         )
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            logger.debug("groq generate succeeded")
+            return response
+        except Exception:
+            logger.exception("groq generate failed", extra={"model": self.model})
+            raise
 
     def parse_response(self, raw, latency_ms: float) -> LLMResponse:
         usage = raw.usage
+        prompt_tokens = usage.prompt_tokens
+        completion_tokens = usage.completion_tokens
+        finish_reason = raw.choices[0].finish_reason
+
+        logger.info(
+            "groq response parsed",
+            extra={
+                "model": self.model,
+                "latency_ms": round(latency_ms, 2),
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "finish_reason": finish_reason,
+            },
+        )
 
         return LLMResponse(
             text=raw.choices[0].message.content,
             provider="groq",
             model=self.model,
             latency_ms=latency_ms,
-            prompt_tokens=usage.prompt_tokens,
-            completion_tokens=usage.completion_tokens,
-            finish_reason=raw.choices[0].finish_reason,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            finish_reason=finish_reason,
         )

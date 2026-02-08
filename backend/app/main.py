@@ -1,3 +1,11 @@
+import logging
+
+from app.core.logging import setup_logging
+
+setup_logging()
+
+logger = logging.getLogger(__name__)
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -9,9 +17,22 @@ from app.db.qdrant import _assert_embedding_dim, ping_qdrant
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    ping_qdrant()
-    _assert_embedding_dim()
+    logger.info("application startup begun")
+    try:
+        ping_qdrant()
+        logger.info("qdrant connection verified")
+    except Exception:
+        logger.exception("failed to connect to qdrant during startup")
+        raise
+    try:
+        _assert_embedding_dim()
+        logger.info("embedding dimension check passed")
+    except Exception:
+        logger.exception("embedding dimension assertion failed during startup")
+        raise
+    logger.info("application startup complete")
     yield
+    logger.info("application shutdown")
 
 
 app = FastAPI(lifespan=lifespan)

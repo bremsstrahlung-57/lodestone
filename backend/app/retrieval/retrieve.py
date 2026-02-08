@@ -1,7 +1,12 @@
+import logging
+
 from app.db.qdrant import fetch_chunk_by_ids, search_docs
+
+logger = logging.getLogger(__name__)
 
 
 def retrieve_data(query: str, limit: int, k: int = 3):
+    logger.info("retrieving data", extra={"query": query, "limit": limit, "k": k})
     original_data = search_docs(query, limit, k)
     context_data = []
 
@@ -16,6 +21,7 @@ def retrieve_data(query: str, limit: int, k: int = 3):
         }
         context_data.append(con)
 
+    logger.info("retrieve_data complete", extra={"docs_found": len(context_data)})
     return context_data
 
 
@@ -26,7 +32,16 @@ def expand_chunk_ids(chunk_ids, total_chunks):
             if 0 <= x < total_chunks:
                 window.add(x)
 
-    return sorted(window)
+    expanded = sorted(window)
+    logger.debug(
+        "expanded chunk window",
+        extra={
+            "input_ids": chunk_ids,
+            "expanded_ids": expanded,
+            "total_chunks": total_chunks,
+        },
+    )
+    return expanded
 
 
 def get_evidence_chunks(all_chunks):
@@ -47,10 +62,21 @@ def build_context(doc_id, evidence, total_chunks):
     context_list = set()
     for p in points:
         context_list.add(p.payload["text"])
+
+    logger.debug(
+        "built context for document",
+        extra={
+            "doc_id": doc_id,
+            "hit_chunks": len(hit_ids),
+            "window_chunks": len(window_ids),
+            "context_pieces": len(context_list),
+        },
+    )
     return list(context_list)
 
 
 def refine_results(results):
+    logger.info("refining search results", extra={"input_count": len(results)})
     refined_for_context = []
 
     for item in results:
@@ -80,6 +106,20 @@ def refine_results(results):
             }
         )
 
+        logger.debug(
+            "refined document",
+            extra={
+                "doc_id": doc_id,
+                "title": title,
+                "score": score,
+                "evidence_chunks": len(evidence),
+                "context_pieces": len(context),
+            },
+        )
+
+    logger.info(
+        "refine_results complete", extra={"output_count": len(refined_for_context)}
+    )
     return refined_for_context
 
 
@@ -100,4 +140,8 @@ def llm_context_builder(query, refined_result):
             }
         )
 
+    logger.debug(
+        "built LLM context",
+        extra={"query": query, "context_docs": len(llm_context["context"])},
+    )
     return llm_context

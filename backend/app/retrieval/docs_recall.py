@@ -1,6 +1,10 @@
+import logging
+
 from app.db.qdrant import search_docs
 from app.llm.generation import LLMGeneration, prompt_generation
 from app.retrieval.retrieve import refine_results
+
+logger = logging.getLogger(__name__)
 
 
 def Recall(
@@ -10,6 +14,17 @@ def Recall(
     k: int,
     provider: str | None,
 ):
+    logger.info(
+        "recall started",
+        extra={
+            "query": query,
+            "mode": mode,
+            "limit": limit,
+            "k": k,
+            "provider": provider,
+        },
+    )
+
     RESULT = {
         "query": query,
         "mode": mode,
@@ -21,6 +36,10 @@ def Recall(
 
     call_llm = LLMGeneration()
     searched_docs = search_docs(query=query, limit=limit, k=k)
+    logger.info(
+        "search completed",
+        extra={"query": query, "doc_count": len(searched_docs)},
+    )
     refined_docs = refine_results(searched_docs)
 
     for docs in searched_docs:
@@ -41,12 +60,21 @@ def Recall(
         RESULT["results"].append(res)
 
     if mode == "retrieval":
+        logger.info(
+            "retrieval mode returning results",
+            extra={"query": query, "result_count": len(RESULT["results"])},
+        )
         return RESULT
 
     if mode == "ai":
         if provider is None:
-            print("LLM provider Not Given")
+            logger.warning("LLM provider not given, returning without AI answer")
             return RESULT
+
+        logger.info(
+            "generating LLM response",
+            extra={"provider": provider, "query": query},
+        )
         prompt = prompt_generation(query, refined_docs)
         llm_response = call_llm.generate(provider=provider, prompt=prompt)
 
@@ -58,5 +86,16 @@ def Recall(
             "completion_tokens": llm_response.completion_tokens,
             "finish_reason": llm_response.finish_reason,
         }
+
+        logger.info(
+            "LLM response received",
+            extra={
+                "provider": llm_response.provider,
+                "latency_ms": llm_response.latency_ms,
+                "prompt_tokens": llm_response.prompt_tokens,
+                "completion_tokens": llm_response.completion_tokens,
+                "finish_reason": llm_response.finish_reason,
+            },
+        )
 
     return RESULT
