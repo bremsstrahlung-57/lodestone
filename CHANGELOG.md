@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.4.2] - 2026-02-11
+
+### Added
+
+- Query rewriting in the Recall class to improve search relevance
+- Unit tests for query rewriting
+- `filter_qdrant_results` for enhanced Qdrant search result filtering
+
+### Changed
+
+- Refactored Recall from a function to a class
+- Improved overall search result filtering logic
+
+---
+
 ## [0.3.2] — 2026-02-08
 
 ### Added

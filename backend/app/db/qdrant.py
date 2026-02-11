@@ -93,6 +93,29 @@ def ensure_collection_exists(
     logger.info("collection created", extra={"collection": collection_name})
 
 
+def filter_qdrant_results(
+    results: list[dict],
+    *,
+    min_relative: float = 0.7,
+    min_absolute: float | None = None,
+    fallback_top_k: int = 3,
+):
+    if not results:
+        return []
+
+    max_score = results[0].get("score", 0.0)
+
+    filtered = [r for r in results if r.get("score", 0.0) >= max_score * min_relative]
+
+    if min_absolute is not None:
+        filtered = [r for r in filtered if r.get("score", 0.0) >= min_absolute]
+
+    if not filtered:
+        filtered = results[:fallback_top_k]
+
+    return filtered
+
+
 def search_docs(query, limit=5, k=3):
     """Search for a query from the Vector DB"""
     logger.info("searching docs", extra={"query": query, "limit": limit, "k": k})
@@ -207,12 +230,11 @@ def search_docs(query, limit=5, k=3):
             )
 
     results.sort(key=lambda item: item["score"], reverse=True)
-    max_score = results[0].get("score")
-    final_res = list(
-        filter(
-            lambda d: d.get("score") >= 0.25 and d.get("score") >= max_score * 0.60,
-            results,
-        )
+    max_score = results[0].get("score", 0.0)
+    final_res = filter_qdrant_results(
+        results,
+        min_absolute=0.3,
+        fallback_top_k=k,
     )
 
     logger.info(

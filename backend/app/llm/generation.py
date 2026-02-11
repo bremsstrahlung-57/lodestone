@@ -55,6 +55,26 @@ class LLMGeneration:
 
         return response
 
+    def rewrite_query(
+        self,
+        query: str,
+        provider: str,
+        api_key: str | None = None,
+        model: str | None = None,
+    ) -> str:
+        logger.info(
+            "starting query rewriting",
+            extra={"user_query": query, "provider": provider, "model": model},
+        )
+
+        llm = LLMFactory.create(
+            provider=provider,
+            api_key=api_key,
+            model=model,
+        )
+        rewritten_query = llm.query_rewrite(query)
+        return rewritten_query if rewritten_query is not None else query
+
 
 def prompt_generation(query, refined_result):
     context = llm_context_builder(query, refined_result)

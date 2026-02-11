@@ -235,6 +235,58 @@
                 "latency_ms": null,
                 "results_type": "list"
             }
+        },
+        {
+            "test_id": "rewrite_query_disabled",
+            "description": "Query rewriting disabled - rewritten_query should equal original query",
+            "input": {
+                "query": "kratos from which game",
+                "mode": "retrieval",
+                "limit": 5,
+                "k": 3,
+                "provider": null,
+                "rewrite_query": false
+            },
+            "expected": {
+                "mode": "retrieval",
+                "rewritten_query_should_equal_query": true,
+                "results_type": "list"
+            }
+        },
+        {
+            "test_id": "rewrite_query_no_provider",
+            "description": "Query rewriting enabled but no provider - should fall back to original query",
+            "input": {
+                "query": "mc of gow",
+                "mode": "retrieval",
+                "limit": 5,
+                "k": 3,
+                "provider": null,
+                "rewrite_query": true
+            },
+            "expected": {
+                "mode": "retrieval",
+                "rewritten_query_should_equal_query": true,
+                "results_type": "list"
+            }
+        },
+        {
+            "test_id": "rewrite_query_gemini",
+            "description": "Query rewriting with Gemini - should rewrite abbreviations while preserving intent",
+            "input": {
+                "query": "mc of gow",
+                "mode": "retrieval",
+                "limit": 5,
+                "k": 3,
+                "provider": "gemini",
+                "rewrite_query": true
+            },
+            "expected": {
+                "mode": "retrieval",
+                "rewritten_query_should_differ": true,
+                "rewritten_query_should_not_be_empty": true,
+                "results_type": "list"
+            }
         }
     ],
     "metadata": {

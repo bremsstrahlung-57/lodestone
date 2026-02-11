@@ -21,13 +21,15 @@ def test_recall(case):
     print(f"\nTest: {test_id}")
     print(f"Description: {description}")
 
-    result = Recall(
+    rec = Recall(
         query=input_data["query"],
         mode=input_data["mode"],
         limit=input_data["limit"],
         k=input_data["k"],
         provider=input_data["provider"],
+        rewrite_query=input_data.get("rewrite_query", False),
     )
+    result = rec.get_results()
 
     assert result["mode"] == expected["mode"], (
         f"Mode mismatch: expected {expected['mode']}, got {result['mode']}"
@@ -85,7 +87,29 @@ def test_recall(case):
     if expected.get("llm_should_not_exist"):
         assert "llm" not in result, "Expected 'llm' key to not exist"
 
+    # Query rewriting assertions
+    if expected.get("rewritten_query_should_equal_query"):
+        assert result["rewritten_query"] == input_data["query"], (
+            f"Expected rewritten_query to equal original query '{input_data['query']}', "
+            f"got '{result['rewritten_query']}'"
+        )
+
+    if expected.get("rewritten_query_should_differ"):
+        assert result["rewritten_query"] != input_data["query"], (
+            f"Expected rewritten_query to differ from original query '{input_data['query']}', "
+            f"but they are the same"
+        )
+
+    if expected.get("rewritten_query_should_not_be_empty"):
+        assert result["rewritten_query"] is not None, (
+            "Rewritten query should not be None"
+        )
+        assert len(result["rewritten_query"].strip()) > 0, (
+            "Rewritten query should not be empty"
+        )
+
     print(f"Results count: {len(result['results'])}")
+    print(f"Rewritten query: {result['rewritten_query']}")
     if result["ai_answer"]:
         print(f"AI Answer: {result['ai_answer'][:100]}...")
     print("PASSED")
@@ -99,13 +123,14 @@ def test_recall_returns_correct_structure(mode):
     """Test that Recall returns the expected base structure"""
     provider = "groq" if mode == "ai" else None
 
-    result = Recall(
+    rec = Recall(
         query="test query",
         mode=mode,
         limit=3,
         k=2,
         provider=provider,
     )
+    result = rec.get_results()
 
     assert "query" in result
     assert "mode" in result
@@ -117,15 +142,108 @@ def test_recall_returns_correct_structure(mode):
 
 def test_recall_retrieval_mode_ignores_provider():
     """Test that retrieval mode works even when provider is given"""
-    result = Recall(
+    rec = Recall(
         query="rpg games",
         mode="retrieval",
         limit=5,
         k=3,
         provider="gemini",
     )
+    result = rec.get_results()
 
     assert result["ai_answer"] is None
     assert result["provider"] is None
     assert result["latency_ms"] is None
     assert "llm" not in result
+
+
+def test_rewrite_query_disabled_returns_original():
+    """When rewrite_query=False, rewritten_query should be the same as user query"""
+    query = "kratos from which game"
+    rec = Recall(query=query, mode="retrieval", limit=3, k=2, rewrite_query=False)
+    result = rec.get_results()
+
+    assert result["rewritten_query"] == query
+
+
+def test_rewrite_query_no_provider_falls_back():
+    """When rewrite_query=True but provider=None, should fall back to original query"""
+    query = "mc of gow"
+    rec = Recall(
+        query=query, mode="retrieval", limit=3, k=2, provider=None, rewrite_query=True
+    )
+    result = rec.get_results()
+
+    assert result["rewritten_query"] == query
+
+
+@pytest.mark.parametrize("provider", ["gemini", "groq"])
+def test_rewrite_query_produces_different_query(provider):
+    """When rewrite_query=True with a provider, the rewritten query should differ from the original"""
+    query = "mc of gow"
+    rec = Recall(
+        query=query,
+        mode="retrieval",
+        limit=3,
+        k=2,
+        provider=provider,
+        rewrite_query=True,
+    )
+    result = rec.get_results()
+
+    assert result["rewritten_query"] is not None
+    assert len(result["rewritten_query"].strip()) > 0, (
+        "Rewritten query should not be empty"
+    )
+    assert result["rewritten_query"] != query, (
+        f"Expected rewritten query to differ from '{query}', got '{result['rewritten_query']}'"
+    )
+
+
+@pytest.mark.parametrize("provider", ["gemini", "groq"])
+def test_rewrite_query_preserves_question_intent(provider):
+    """A question query should remain a question after rewriting, not become a label/description"""
+    query = "kratos from which game"
+    rec = Recall(
+        query=query,
+        mode="retrieval",
+        limit=3,
+        k=2,
+        provider=provider,
+        rewrite_query=True,
+    )
+    result = rec.get_results()
+
+    rewritten = result["rewritten_query"]
+    assert rewritten is not None
+    assert len(rewritten.strip()) > 0
+
+    intent_markers = ["which", "what", "from", "?", "game"]
+    has_intent = any(marker in rewritten.lower() for marker in intent_markers)
+    assert has_intent, (
+        f"Rewritten query '{rewritten}' lost the question intent of original query '{query}'. "
+        f"Expected at least one of {intent_markers} to be present."
+    )
+
+
+def test_rewrite_query_clear_query_minimal_change():
+    """A query that is already clear should be returned with minimal changes"""
+    query = "What is the main character in God of War?"
+    rec = Recall(
+        query=query,
+        mode="retrieval",
+        limit=3,
+        k=2,
+        provider="gemini",
+        rewrite_query=True,
+    )
+    result = rec.get_results()
+
+    rewritten = result["rewritten_query"]
+    assert rewritten is not None
+
+    key_terms = ["god of war", "main character"]
+    for term in key_terms:
+        assert term in rewritten.lower(), (
+            f"Rewritten query '{rewritten}' lost key term '{term}' from original '{query}'"
+        )

@@ -7,81 +7,107 @@ from app.retrieval.retrieve import refine_results
 logger = logging.getLogger(__name__)
 
 
-def Recall(
-    query: str,
-    mode: str,
-    limit: int,
-    k: int,
-    provider: str | None,
-):
-    logger.info(
-        "recall started",
-        extra={
-            "query": query,
-            "mode": mode,
-            "limit": limit,
-            "k": k,
-            "provider": provider,
-        },
-    )
+class Recall:
+    def __init__(
+        self,
+        query: str,
+        limit: int,
+        k: int,
+        mode: str = "retrieval",
+        provider: str | None = None,
+        rewrite_query: bool = False,
+    ):
+        self.user_query = query
+        self.mode = mode
+        self.limit = limit
+        self.k = k
+        self.provider = provider
+        self.rewrite_query = rewrite_query
+        self.searched_docs = None
+        self.refined_docs = None
+        self.ai_mode = LLMGeneration()
+        self.new_query = (
+            self.ai_mode.rewrite_query(self.user_query, self.provider)
+            if rewrite_query and provider is not None
+            else self.user_query
+        )
 
-    RESULT = {
-        "query": query,
-        "mode": mode,
-        "results": [],
-        "ai_answer": None,
-        "provider": None,
-        "latency_ms": None,
-    }
+        logger.info(
+            "recall initialised",
+            extra={
+                "query": query,
+                "limit": limit,
+                "k": k,
+                "mode": mode,
+                "provider": provider,
+                "rewrite_query": rewrite_query,
+                "rewritten_query": self.new_query,
+            },
+        )
 
-    call_llm = LLMGeneration()
-    searched_docs = search_docs(query=query, limit=limit, k=k)
-    logger.info(
-        "search completed",
-        extra={"query": query, "doc_count": len(searched_docs)},
-    )
-    refined_docs = refine_results(searched_docs)
-
-    for docs in searched_docs:
-        doc_id = docs.get("doc_id", None)
-        title = docs.get("title", "")
-        source = docs.get("source", "")
-        score = docs.get("score", None)
-        snippets = docs.get("all_chunks", [])
-
-        res = {
-            "doc_id": doc_id,
-            "title": title,
-            "source": source,
-            "score": score,
-            "snippets": snippets,
+        self.RESULT = {
+            "query": self.user_query,
+            "rewritten_query": self.new_query,
+            "mode": self.mode,
+            "results": [],
+            "ai_answer": None,
+            "provider": None,
+            "latency_ms": None,
         }
 
-        RESULT["results"].append(res)
+        _query = self.user_query
+        if self.rewrite_query:
+            _query = self.new_query
 
-    if mode == "retrieval":
+        self.searched_docs = search_docs(query=_query, limit=self.limit, k=self.k)
+        logger.info(
+            "search completed",
+            extra={"query": _query, "doc_count": len(self.searched_docs)},
+        )
+        self.refined_docs = refine_results(self.searched_docs)
+
+        for docs in self.searched_docs:
+            doc_id = docs.get("doc_id", None)
+            title = docs.get("title", "")
+            source = docs.get("source", "")
+            score = docs.get("score", None)
+            snippets = docs.get("all_chunks", [])
+
+            res = {
+                "doc_id": doc_id,
+                "title": title,
+                "source": source,
+                "score": score,
+                "snippets": snippets,
+            }
+            self.RESULT["results"].append(res)
+
+    def retrieval_result(self):
         logger.info(
             "retrieval mode returning results",
-            extra={"query": query, "result_count": len(RESULT["results"])},
+            extra={
+                "query": self.user_query,
+                "rewritten_query": self.new_query,
+                "result_count": len(self.RESULT["results"]),
+            },
         )
-        return RESULT
 
-    if mode == "ai":
-        if provider is None:
+    def ai_result(self):
+        if self.provider is None:
             logger.warning("LLM provider not given, returning without AI answer")
-            return RESULT
+            return
 
         logger.info(
             "generating LLM response",
-            extra={"provider": provider, "query": query},
+            extra={"provider": self.provider, "query": self.new_query},
         )
-        prompt = prompt_generation(query, refined_docs)
-        llm_response = call_llm.generate(provider=provider, prompt=prompt)
+        prompt = prompt_generation(self.new_query, self.refined_docs)
+        llm_response = self.ai_mode.generate(provider=self.provider, prompt=prompt)
 
-        RESULT["ai_answer"] = llm_response.text
-        RESULT["provider"] = llm_response.provider
-        RESULT["latency_ms"] = llm_response.latency_ms
-        RESULT["llm"] = {
+        self.RESULT["ai_answer"] = llm_response.text
+        self.RESULT["provider"] = llm_response.provider
+        self.RESULT["latency_ms"] = llm_response.latency_ms
+        self.RESULT["llm"] = {
             "prompt_tokens": llm_response.prompt_tokens,
             "completion_tokens": llm_response.completion_tokens,
             "finish_reason": llm_response.finish_reason,
@@ -98,4 +124,9 @@ def Recall(
             },
         )
 
-    return RESULT
+    def get_results(self):
+        self.retrieval_result()
+        if self.mode == "ai":
+            self.ai_result()
+
+        return self.RESULT

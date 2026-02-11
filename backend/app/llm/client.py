@@ -43,6 +43,23 @@ def create_groq_client(api_key: str):
     return Groq(api_key=api_key)
 
 
+def query_rewriting_prompt(query: str):
+    prompt = f"""You are a query rewriter for a semantic search system.
+Given a user query, rewrite it to improve retrieval from a vector database while strictly preserving the original meaning and intent.
+Guidelines:
+- Expand abbreviations and fix spelling errors
+- Preserve the original question type and intent exactly
+- Do not add information the user did not mention
+- Do not convert questions into descriptions or labels
+- Do not remove key constraints like "which", "how many", "when", etc.
+- If the query is already clear, return it with minimal changes
+- Return only the rewritten query, nothing else
+User Query:
+{query}
+"""
+    return prompt
+
+
 @dataclass
 class LLMResponse:
     text: str | None
@@ -63,6 +80,10 @@ class BaseLLM(ABC):
     def parse_response(self, raw, latency_ms: float) -> LLMResponse:
         pass
 
+    @abstractmethod
+    def query_rewrite(self, query: str) -> str:
+        pass
+
 
 class GeminiLLM(BaseLLM):
     def __init__(self, api_key: str, model: str):
@@ -75,19 +96,15 @@ class GeminiLLM(BaseLLM):
             "gemini generate called",
             extra={"model": self.model, "prompt_len": len(prompt)},
         )
-        try:
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT,
-                ),
-            )
-            logger.debug("gemini generate succeeded")
-            return response
-        except Exception:
-            logger.exception("gemini generate failed", extra={"model": self.model})
-            raise
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+            ),
+        )
+        logger.debug("gemini generate succeeded")
+        return response
 
     def parse_response(self, raw, latency_ms: float) -> LLMResponse:
         usage = getattr(raw, "usage_metadata", None)
@@ -116,6 +133,23 @@ class GeminiLLM(BaseLLM):
             finish_reason=finish_reason,
         )
 
+    def query_rewrite(self, query: str):
+        prompt = query_rewriting_prompt(query)
+
+        logger.debug(
+            "gemini query rewriting called",
+            extra={"user_query": query, "model": self.model, "prompt_len": len(prompt)},
+        )
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=prompt,
+        )
+        logger.debug(
+            "gemini query rewriting succeeded",
+            extra={"rewritten_query": response.text},
+        )
+        return response.text
+
 
 class GroqLLM(BaseLLM):
     def __init__(self, api_key: str, model: str):
@@ -128,19 +162,15 @@ class GroqLLM(BaseLLM):
             "groq generate called",
             extra={"model": self.model, "prompt_len": len(prompt)},
         )
-        try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": prompt},
-                ],
-            )
-            logger.debug("groq generate succeeded")
-            return response
-        except Exception:
-            logger.exception("groq generate failed", extra={"model": self.model})
-            raise
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        logger.debug("groq generate succeeded")
+        return response
 
     def parse_response(self, raw, latency_ms: float) -> LLMResponse:
         usage = raw.usage
@@ -168,3 +198,22 @@ class GroqLLM(BaseLLM):
             completion_tokens=completion_tokens,
             finish_reason=finish_reason,
         )
+
+    def query_rewrite(self, query: str):
+        prompt = query_rewriting_prompt(query)
+
+        logger.debug(
+            "groq query rewriting called",
+            extra={"model": self.model, "prompt_len": len(prompt)},
+        )
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "user", "content": prompt},
+            ],
+        )
+        logger.debug(
+            "groq query rewriting succeeded",
+            extra={"rewritten_query": response.choices[0].message.content},
+        )
+        return response.choices[0].message.content

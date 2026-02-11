@@ -6,7 +6,7 @@ You can upload files, text, and bookmarks, and later retrieve them using natural
 
 It is designed to replace manual searching across folders, notes apps, and websites with a single searchable memory.
 
-## Current Version (v0.3.2)
+## Current Version (v0.4.2)
 ### What it does
 
 - **Semantic search** over your own documents using sentence embeddings (MiniLM-L6-v2)
@@ -22,3 +22,4 @@ It is designed to replace manual searching across folders, notes apps, and websi
 - **Structured logging** — rotating file logs across all layers (API, DB, LLM, ingestion, retrieval)
 - **FastAPI backend** — single `/api/search` endpoint handles both retrieval and AI modes
 - **CORS ready** — configured for local frontend on port 3000
+- **Query rewriting** — rewrite query using ai for better search results

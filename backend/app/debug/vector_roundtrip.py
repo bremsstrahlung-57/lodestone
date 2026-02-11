@@ -98,13 +98,15 @@ class Debug:
 
     def debug_Recall(self):
         provider = llm_provider()
-        return Recall(
+        debug_rec = Recall(
             query=self.query,
-            mode="ai",
             limit=self.limit,
             k=self.k,
+            mode="ai",
             provider=provider,
+            rewrite_query=True,
         )
+        return debug_rec.get_results()
 
 
 def main():

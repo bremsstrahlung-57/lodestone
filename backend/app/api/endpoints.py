@@ -29,6 +29,7 @@ def search_api(
     k: int = Query(3, ge=1, le=5),
     mode: Literal["retrieval", "ai"] = Query("retrieval"),
     provider: Optional[LLMProvider] = Query(None),
+    rewrite_query: bool = Query(False),
 ):
     logger.info(
         "search request received",
@@ -38,17 +39,20 @@ def search_api(
             "limit": limit,
             "k": k,
             "provider": provider,
+            "rewrite_query": rewrite_query,
         },
     )
 
     try:
-        result = Recall(
+        recall_init = Recall(
             query=query,
-            mode=mode,
             limit=limit,
             k=k,
+            mode=mode,
             provider=provider,
+            rewrite_query=rewrite_query,
         )
+        result = recall_init.get_results()
         result_count = len(result.get("results", []))
         logger.info(
             "search request completed",
