@@ -96,7 +96,7 @@ class Debug:
         prompt = self.debug_prompt_generation()
         return llm_gen.generate(provider, prompt)
 
-    def debug_Recall(self):
+    def debug_Recall(self, rewrite_query):
         provider = llm_provider()
         debug_rec = Recall(
             query=self.query,
@@ -104,7 +104,7 @@ class Debug:
             k=self.k,
             mode="ai",
             provider=provider,
-            rewrite_query=True,
+            rewrite_query=rewrite_query,
         )
         return debug_rec.get_results()
 
@@ -121,7 +121,7 @@ def main():
     # print(debug_instance.debug_llm_context_builder())
     # print(debug_instance.debug_GenerateLLMContext())
     # print(debug_instance.debug_llm_generation())
-    print(debug_instance.debug_Recall())
+    print(debug_instance.debug_Recall(rewrite_query=True))
 
 
 if __name__ == "__main__":

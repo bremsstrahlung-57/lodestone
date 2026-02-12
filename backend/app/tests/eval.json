@@ -16,7 +16,99 @@
         "expected": [
             "84169cf17fdd3b8b6a8a7f51ad0cbaba119e0817a78a5fc7e19cf379a9633b9f",
             "cc5e7bd8fd2d0160a2dcb9bee90afb17f4e9ccb8791e1888c0c1450720b4da8a",
+            "561c5e2415586a138733becd1cfd67ab8bbcbcc8e1013fefffadca75968cf8a4",
+            "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72",
+            "0f4d41feedd4381842b5e925ad8446ead37b81b53ec5b024b7d8b25372662ac2",
+            "b9db53a16cda76051d2badeb39e154e67755c75a0b337345102d8d1b24b9dc17",
+            "37daa4bacd7ef4c2c9779b6c1917a25891cf8ea5eeffe4204c73978f2628be18",
+            "62e93f5fd1c0c9fb5d7b65d09119312ffa8cda1fc4744e4ffb37d67520527b1a",
+            "cf628ca34bae66d67fba654f204ca61c09c4d72ad4b4725308ef328228b7c6d3"
+        ]
+    },
+    {
+        "query": "what is the story of elden ring",
+        "expected": [
+            "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72"
+        ]
+    },
+    {
+        "query": "FromSoftware games with difficult boss fights",
+        "expected": [
+            "37daa4bacd7ef4c2c9779b6c1917a25891cf8ea5eeffe4204c73978f2628be18",
+            "561c5e2415586a138733becd1cfd67ab8bbcbcc8e1013fefffadca75968cf8a4",
+            "62e93f5fd1c0c9fb5d7b65d09119312ffa8cda1fc4744e4ffb37d67520527b1a",
+            "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72"
+        ]
+    },
+    {
+        "query": "tell me about bloodborne",
+        "expected": [
             "561c5e2415586a138733becd1cfd67ab8bbcbcc8e1013fefffadca75968cf8a4"
+        ]
+    },
+    {
+        "query": "neural network image classification models",
+        "expected": [
+            "5a5c3bb46154e1e29209356730fd0433b443f84c072a6e592e92920664b5d16e",
+            "e49e2fab9f56639d4bedc5c627d9ed675b9313e844658c592c6463594fd171e9"
+        ]
+    },
+    {
+        "query": "red dead redemption 2 story",
+        "expected": [
+            "b9db53a16cda76051d2badeb39e154e67755c75a0b337345102d8d1b24b9dc17"
+        ]
+    },
+    {
+        "query": "how to make brewing stand minecraft",
+        "expected": [
+            "1c6d7ffee921dd47d72bc11a3cf91642223eecfee0d60c70f0d18ae523151964"
+        ]
+    },
+    {
+        "query": "archaeology and ancient history discoveries",
+        "expected": [
+            "4a7db46f0821cca97439372064abd9a50887b18d22354c71585da358e1805715",
+            "94c6839037273392db0b3ef28d3bde80fa9cf2c235ff4600bd6d454c38a2b55c"
+        ]
+    },
+    {
+        "query": "god of war kratos and atreus",
+        "expected": [
+            "0f4d41feedd4381842b5e925ad8446ead37b81b53ec5b024b7d8b25372662ac2"
+        ]
+    },
+    {
+        "query": "games with deep narrative and character development",
+        "expected": [
+            "b9db53a16cda76051d2badeb39e154e67755c75a0b337345102d8d1b24b9dc17",
+            "cc5e7bd8fd2d0160a2dcb9bee90afb17f4e9ccb8791e1888c0c1450720b4da8a",
+            "0f4d41feedd4381842b5e925ad8446ead37b81b53ec5b024b7d8b25372662ac2",
+            "84169cf17fdd3b8b6a8a7f51ad0cbaba119e0817a78a5fc7e19cf379a9633b9f"
+        ]
+    },
+    {
+        "query": "what is RAG in AI",
+        "expected": [
+            "6e6bcfce6483b8eff08481dfecf06aecf120f5888f6e49316c67b4adac6b5856"
+        ]
+    },
+    {
+        "query": "eldenring plot pls",
+        "expected": [
+            "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72"
+        ]
+    },
+    {
+        "query": "the wheat dna thing from egypt",
+        "expected": [
+            "4a7db46f0821cca97439372064abd9a50887b18d22354c71585da358e1805715"
+        ]
+    },
+    {
+        "query": "that dream about marriage on train",
+        "expected": [
+            "838bb6d5c0a6d9d4db38a47b8cdb80b00e1990169f4a21c9b491d10f07d10b04"
         ]
     }
 ]

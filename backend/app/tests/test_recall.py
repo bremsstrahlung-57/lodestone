@@ -11,6 +11,11 @@ def load_test_cases():
         return data["test_cases"]
 
 
+def load_eval_json_test_cases():
+    with open("app/tests/eval.json", "r") as f:
+        return json.load(f)
+
+
 @pytest.mark.parametrize("case", load_test_cases(), ids=lambda c: c["test_id"])
 def test_recall(case):
     test_id = case["test_id"]
@@ -247,3 +252,39 @@ def test_rewrite_query_clear_query_minimal_change():
         assert term in rewritten.lower(), (
             f"Rewritten query '{rewritten}' lost key term '{term}' from original '{query}'"
         )
+
+
+@pytest.mark.parametrize("case", load_eval_json_test_cases())
+def test_rewrite_improvement(case):
+    """Test if rewritten query actually gives better results"""
+
+    query = case["query"]
+    expected_ids = set(case["expected"])
+    limit = 5
+    k = 3
+    provider = "groq"
+
+    baseline = Recall(
+        query=query,
+        mode="retrieval",
+        limit=limit,
+        k=k,
+        provider=provider,
+        rewrite_query=False,
+    ).get_results()
+
+    rewritten = Recall(
+        query=query,
+        mode="retrieval",
+        limit=limit,
+        k=k,
+        provider=provider,
+        rewrite_query=True,
+    ).get_results()
+
+    baseline_ids = {doc["doc_id"] for doc in baseline["results"]}
+    rewritten_ids = {doc["doc_id"] for doc in rewritten["results"]}
+
+    assert len(rewritten_ids & expected_ids) >= len(baseline_ids & expected_ids), (
+        f"Query: {query} Rewritten; {rewritten['rewritten_query']}"
+    )
