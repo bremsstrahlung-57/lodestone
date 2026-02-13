@@ -16,18 +16,14 @@ DEFAULT_GEMINI_API_KEY = settings.gemini_api_key
 DEFAULT_GEMINI_MODEL = settings.gemini_model
 DEFAULT_GROQ_API_KEY = settings.groq_api_key
 DEFAULT_GROQ_MODEL = settings.groq_model
-SYSTEM_PROMPT = """You are a retrieval grounded assistant.
-You must answer only using the provided context.
-The context comes from user owned documents retrieved via semantic search.
+SYSTEM_PROMPT = """You are a document-grounded assistant. Answer questions using ONLY the provided context from the user's personal documents.
+
 Rules:
-Do not use outside knowledge.
-Do not guess or fill gaps.
-If the context is insufficient, say so explicitly.
-Prefer factual, grounded answers.
-If multiple documents disagree, mention the disagreement.
-Cite evidence implicitly by phrasing, not by adding references.
-Do not mention embeddings, vector databases, or chunking.
-Your goal is to produce a clear, concise, and accurate answer grounded strictly in the context."""
+- Use only information from the context; never use outside knowledge
+- If the context doesn't contain enough information, say so clearly
+- If documents contradict each other, acknowledge the disagreement
+- Be concise and direct
+- Never mention technical details like embeddings, vectors, or chunks"""
 
 
 class LLMProvider(str, Enum):
@@ -43,45 +39,29 @@ def create_groq_client(api_key: str):
     return Groq(api_key=api_key)
 
 
-def query_rewriting_prompt(query: str):
-    prompt = f"""You are a deterministic query rewriter for a semantic search system.
-    Your purpose is to improve retrieval quality in a vector database
-    while preserving the user's exact meaning, scope, and intent.
+def query_rewriting_prompt(query):
+    return f"""Rewrite the user query to improve semantic search retrieval.
 
-    Core Objective:
-    Increase semantic clarity and entity specificity without altering
-    the question type, constraints, or adding new information.
+Your task:
+- Expand abbreviations and acronyms to their full forms
+- Fix typos and grammar errors
+- Clarify ambiguous or shorthand phrases
+- Preserve the original question type and constraints
 
-    Strict Constraints:
-    1. Do NOT change the intent, scope, or level of specificity.
-    2. Do NOT add assumptions, inferred context, or missing details.
-    3. Do NOT introduce new entities or qualifiers.
-    4. Do NOT remove constraints such as:
-       - which
-       - how many
-       - when
-       - where
-       - why
-       - specific years, versions, limits, filters
-    5. Do NOT convert a question into a statement.
-    6. Do NOT broaden or narrow the query.
-    7. Do NOT explain anything. Output only the rewritten query.
+Do NOT:
+- Add new information or assumptions beyond expanding abbreviations
+- Change the scope or intent of the query
+- Explain your reasoning
 
-    Allowed Transformations:
-    - Fix spelling and grammar if needed.
-    - Expand abbreviations only when unambiguous (e.g., "GOW" → "God of War").
-    - Replace vague pronouns with explicit references only if already clearly implied.
-    - Normalize capitalization of proper nouns.
-    - Prefer canonical names of entities if already clearly implied.
-    - Slightly rephrase for clarity if it improves embedding similarity without changing meaning.
+Output only the rewritten query, nothing else.
 
-    If the query is already clear and optimal for retrieval,
-    return it unchanged.
+Examples:
+- "mc of gow" > "main character of God of War"
+- "RAG in AI" > "Retrieval-Augmented Generation in AI"
+- "best wpns in ds3" > "best weapons in Dark Souls 3"
+- "how to beat nameless king" > "how to beat Nameless King" (minimal change, already clear)
 
-    User Query:
-    {query}"""
-
-    return prompt
+Query: {query}"""
 
 
 @dataclass

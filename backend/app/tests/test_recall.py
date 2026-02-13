@@ -173,7 +173,7 @@ def test_rewrite_query_disabled_returns_original():
 
 def test_rewrite_query_no_provider_falls_back():
     """When rewrite_query=True but provider=None, should fall back to original query"""
-    query = "mc of gow"
+    query = "eldenring plot pls"
     rec = Recall(
         query=query, mode="retrieval", limit=3, k=2, provider=None, rewrite_query=True
     )
@@ -185,7 +185,7 @@ def test_rewrite_query_no_provider_falls_back():
 @pytest.mark.parametrize("provider", ["gemini", "groq"])
 def test_rewrite_query_produces_different_query(provider):
     """When rewrite_query=True with a provider, the rewritten query should differ from the original"""
-    query = "mc of gow"
+    query = "eldenring plot pls"
     rec = Recall(
         query=query,
         mode="retrieval",
@@ -286,5 +286,5 @@ def test_rewrite_improvement(case):
     rewritten_ids = {doc["doc_id"] for doc in rewritten["results"]}
 
     assert len(rewritten_ids & expected_ids) >= len(baseline_ids & expected_ids), (
-        f"Query: {query} Rewritten; {rewritten['rewritten_query']}"
+        f"Query: {query} | Rewritten: {rewritten['rewritten_query']}"
     )

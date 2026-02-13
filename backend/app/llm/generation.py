@@ -76,8 +76,8 @@ class LLMGeneration:
         return rewritten_query if rewritten_query is not None else query
 
 
-def prompt_generation(query, refined_result):
-    context = llm_context_builder(query, refined_result)
+def prompt_generation(query, result):
+    context = llm_context_builder(query, result)
     prompt = [
         "Query:",
         query,

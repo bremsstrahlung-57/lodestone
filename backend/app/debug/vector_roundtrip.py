@@ -6,7 +6,6 @@ from app.llm.generation import LLMGeneration, llm_provider, prompt_generation
 from app.retrieval.docs_recall import Recall
 from app.retrieval.retrieve import (
     llm_context_builder,
-    refine_results,
     retrieve_data,
 )
 
@@ -70,25 +69,18 @@ class Debug:
         res = retrieve_data(self.query, self.limit)
         return res
 
-    def debug_refine_results(self):
-        result = search_docs(self.query, self.limit)
-        return refine_results(result)
-
     def debug_llm_context_builder(self):
         result = search_docs(self.query, self.limit)
-        ref_result = refine_results(result)
-        return llm_context_builder(self.query, ref_result)
+        return llm_context_builder(self.query, result)
 
     def debug_GenerateLLMContext(self):
         searched_docs = search_docs(self.query, self.limit, self.k)
-        refined_result = refine_results(searched_docs)
-        generated_context = llm_context_builder(self.query, refined_result)
+        generated_context = llm_context_builder(self.query, searched_docs)
         return generated_context
 
     def debug_prompt_generation(self):
         searched_docs = search_docs(self.query, self.limit, self.k)
-        refined_result = refine_results(searched_docs)
-        return prompt_generation(self.query, refined_result)
+        return prompt_generation(self.query, searched_docs)
 
     def debug_llm_generation(self):
         llm_gen = LLMGeneration()
@@ -96,13 +88,13 @@ class Debug:
         prompt = self.debug_prompt_generation()
         return llm_gen.generate(provider, prompt)
 
-    def debug_Recall(self, rewrite_query):
-        provider = llm_provider()
+    def debug_Recall(self, mode, rewrite_query):
+        provider = llm_provider() if mode == "ai" else None
         debug_rec = Recall(
             query=self.query,
             limit=self.limit,
             k=self.k,
-            mode="ai",
+            mode=mode,
             provider=provider,
             rewrite_query=rewrite_query,
         )
@@ -117,11 +109,10 @@ def main():
     debug_instance = Debug(query, limit, k)
     print(f"\nQuery: {query}")
     # print(debug_instance.debug_search_docs())
-    # print(debug_instance.debug_refine_results())
     # print(debug_instance.debug_llm_context_builder())
     # print(debug_instance.debug_GenerateLLMContext())
     # print(debug_instance.debug_llm_generation())
-    print(debug_instance.debug_Recall(rewrite_query=True))
+    print(debug_instance.debug_Recall(mode="ai", rewrite_query=True))
 
 
 if __name__ == "__main__":

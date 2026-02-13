@@ -75,62 +75,62 @@ def build_context(doc_id, evidence, total_chunks):
     return list(context_list)
 
 
-def refine_results(results):
-    logger.info("refining search results", extra={"input_count": len(results)})
-    refined_for_context = []
+# def refine_results(results):
+#     logger.info("refining search results", extra={"input_count": len(results)})
+#     refined_for_context = []
 
-    for item in results:
-        doc_id = item["doc_id"]
-        title = item["title"]
-        source = item["source"]
-        score = item["score"]
-        chunks = item["all_chunks"]
-        total_chunks = item["total_chunks"]
+#     for item in results:
+#         doc_id = item["doc_id"]
+#         title = item["title"]
+#         source = item["source"]
+#         score = item["score"]
+#         chunks = item["all_chunks"]
+#         total_chunks = item["total_chunks"]
 
-        evidence = get_evidence_chunks(
-            item["all_chunks"],
-        )
+#         evidence = get_evidence_chunks(
+#             item["all_chunks"],
+#         )
 
-        context = build_context(doc_id, chunks, total_chunks)
+#         context = build_context(doc_id, chunks, total_chunks)
 
-        refined_for_context.append(
-            {
-                "doc_id": doc_id,
-                "title": title,
-                "score": score,
-                "source": source,
-                "context": context,
-                "evidence": [
-                    {"chunk_id": e["chunk_id"], "score": e["score"]} for e in evidence
-                ],
-            }
-        )
+#         refined_for_context.append(
+#             {
+#                 "doc_id": doc_id,
+#                 "title": title,
+#                 "score": score,
+#                 "source": source,
+#                 "context": context,
+#                 "evidence": [
+#                     {"chunk_id": e["chunk_id"], "score": e["score"]} for e in evidence
+#                 ],
+#             }
+#         )
 
-        logger.debug(
-            "refined document",
-            extra={
-                "doc_id": doc_id,
-                "title": title,
-                "score": score,
-                "evidence_chunks": len(evidence),
-                "context_pieces": len(context),
-            },
-        )
+#         logger.debug(
+#             "refined document",
+#             extra={
+#                 "doc_id": doc_id,
+#                 "title": title,
+#                 "score": score,
+#                 "evidence_chunks": len(evidence),
+#                 "context_pieces": len(context),
+#             },
+#         )
 
-    logger.info(
-        "refine_results complete", extra={"output_count": len(refined_for_context)}
-    )
-    return refined_for_context
+#     logger.info(
+#         "refine_results complete", extra={"output_count": len(refined_for_context)}
+#     )
+#     return refined_for_context
 
 
-def llm_context_builder(query, refined_result):
-    ref_res = refined_result
+def llm_context_builder(query, result):
+    ref_res = result
     llm_context = {"query": query, "context": []}
     for res in ref_res:
         title = res["title"]
         score = res["score"]
         source = res["source"]
-        chunks = res["context"]
+        chunks = res["all_chunks"]
         llm_context["context"].append(
             {
                 "title": title,

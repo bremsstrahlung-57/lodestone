@@ -2,7 +2,6 @@ import logging
 
 from app.db.qdrant import search_docs
 from app.llm.generation import LLMGeneration, prompt_generation
-from app.retrieval.retrieve import refine_results
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,6 @@ class Recall:
         self.provider = provider
         self.rewrite_query = rewrite_query
         self.searched_docs = None
-        self.refined_docs = None
         self.ai_mode = LLMGeneration()
         self.new_query = (
             self.ai_mode.rewrite_query(self.user_query, self.provider)
@@ -64,7 +62,6 @@ class Recall:
             "search completed",
             extra={"query": _query, "doc_count": len(self.searched_docs)},
         )
-        self.refined_docs = refine_results(self.searched_docs)
 
         for docs in self.searched_docs:
             doc_id = docs.get("doc_id", None)
@@ -101,7 +98,7 @@ class Recall:
             "generating LLM response",
             extra={"provider": self.provider, "query": self.new_query},
         )
-        prompt = prompt_generation(self.new_query, self.refined_docs)
+        prompt = prompt_generation(self.new_query, self.searched_docs)
         llm_response = self.ai_mode.generate(provider=self.provider, prompt=prompt)
 
         self.RESULT["ai_answer"] = llm_response.text
