@@ -1,28 +1,8 @@
 import logging
 
-from app.db.qdrant import fetch_chunk_by_ids, search_docs
+from app.db.qdrant import fetch_chunk_by_ids
 
 logger = logging.getLogger(__name__)
-
-
-def retrieve_data(query: str, limit: int, k: int = 3):
-    logger.info("retrieving data", extra={"query": query, "limit": limit, "k": k})
-    original_data = search_docs(query, limit, k)
-    context_data = []
-
-    for item in original_data:
-        doc_id = item["doc_id"]
-        score = item["score"]
-        chunk_doc = item["max_chunk_text"]
-        con = {
-            "doc_id": doc_id,
-            "score": score,
-            "chunk_doc": chunk_doc,
-        }
-        context_data.append(con)
-
-    logger.info("retrieve_data complete", extra={"docs_found": len(context_data)})
-    return context_data
 
 
 def expand_chunk_ids(chunk_ids, total_chunks):
@@ -73,54 +53,6 @@ def build_context(doc_id, evidence, total_chunks):
         },
     )
     return list(context_list)
-
-
-# def refine_results(results):
-#     logger.info("refining search results", extra={"input_count": len(results)})
-#     refined_for_context = []
-
-#     for item in results:
-#         doc_id = item["doc_id"]
-#         title = item["title"]
-#         source = item["source"]
-#         score = item["score"]
-#         chunks = item["all_chunks"]
-#         total_chunks = item["total_chunks"]
-
-#         evidence = get_evidence_chunks(
-#             item["all_chunks"],
-#         )
-
-#         context = build_context(doc_id, chunks, total_chunks)
-
-#         refined_for_context.append(
-#             {
-#                 "doc_id": doc_id,
-#                 "title": title,
-#                 "score": score,
-#                 "source": source,
-#                 "context": context,
-#                 "evidence": [
-#                     {"chunk_id": e["chunk_id"], "score": e["score"]} for e in evidence
-#                 ],
-#             }
-#         )
-
-#         logger.debug(
-#             "refined document",
-#             extra={
-#                 "doc_id": doc_id,
-#                 "title": title,
-#                 "score": score,
-#                 "evidence_chunks": len(evidence),
-#                 "context_pieces": len(context),
-#             },
-#         )
-
-#     logger.info(
-#         "refine_results complete", extra={"output_count": len(refined_for_context)}
-#     )
-#     return refined_for_context
 
 
 def llm_context_builder(query, result):
