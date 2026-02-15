@@ -1,13 +1,12 @@
+import json
+
 from tqdm import tqdm
 
 from app.db.qdrant import search_docs
 from app.ingest.ingestion import ingest_file
 from app.llm.generation import LLMGeneration, llm_provider, prompt_generation
 from app.retrieval.docs_recall import Recall
-from app.retrieval.retrieve import (
-    llm_context_builder,
-    retrieve_data,
-)
+from app.retrieval.retrieve import llm_context_builder
 
 
 def debug_ingest_file():
@@ -36,14 +35,27 @@ def debug_ingest_file():
 
 
 class Debug:
-    def __init__(self, query, limit=5, k=3):
+    def __init__(
+        self,
+        query,
+        limit=5,
+        k=3,
+        mode="retrieval",
+        provider=None,
+        rewrite_query=False,
+    ):
         self.query = query
         self.limit = limit
         self.k = k
+        self.mode = mode
+        self.provider = provider
+        self.rewrite_query = rewrite_query
 
     def debug_search_docs(self):
-        print("DEBUG SEARCH DOCS: \n")
-        results = search_docs(self.query, self.limit)
+        results = search_docs(
+            self.query, self.limit, cross_encoder_rerank=self.cross_encoder_rerank
+        )
+        print(results)
         if results == []:
             print("Couldn't find any matching data related to your query :(")
         for i in results:
@@ -58,16 +70,12 @@ class Debug:
             total_chunks = i["total_chunks"]
             created_at = i["created_at"]
             all_scores = i["all_scores"]
-            stats = i["stats"]
+            cross_encoder_score = i["cross_encoder_score"]
+            normalized_score = i["normalized_score"]
 
             print(
-                f"Doc ID: {doc_id}\nScore: {score:.4f}\nMax Score: {max_score:.4f}\nAll Scores: {all_scores}\nStats: {stats}\nSource: {source}\nTitle: {title}\nDoc: {doc}\nChunk Doc: {chunk_doc}\nChunk ID: {chunk_id}\nTotal Chunks: {total_chunks}\nCreated At: {created_at}\n"
+                f"Doc ID: {doc_id}\nScore: {score:.4f}\nCrossEncoder Score: {cross_encoder_score:.4f}\nNormalized Score: {normalized_score}\nMax Score: {max_score:.4f}\nAll Scores: {all_scores}\nSource: {source}\nTitle: {title}\nDoc: {doc}\nChunk Doc: {chunk_doc}\nChunk ID: {chunk_id}\nTotal Chunks: {total_chunks}\nCreated At: {created_at}\n"
             )
-
-    def debug_retrieve_data(self):
-        print("\nDEBUG RETRIEVE DATA: \n")
-        res = retrieve_data(self.query, self.limit)
-        return res
 
     def debug_llm_context_builder(self):
         result = search_docs(self.query, self.limit)
@@ -84,35 +92,40 @@ class Debug:
 
     def debug_llm_generation(self):
         llm_gen = LLMGeneration()
-        provider = llm_provider()
         prompt = self.debug_prompt_generation()
-        return llm_gen.generate(provider, prompt)
+        return llm_gen.generate(self.provider, prompt)
 
-    def debug_Recall(self, mode, rewrite_query):
-        provider = llm_provider() if mode == "ai" else None
+    def debug_Recall(self):
         debug_rec = Recall(
             query=self.query,
             limit=self.limit,
             k=self.k,
-            mode=mode,
-            provider=provider,
-            rewrite_query=rewrite_query,
+            mode=self.mode,
+            provider=self.provider,
+            rewrite_query=self.rewrite_query,
         )
-        return debug_rec.get_results()
+        res = json.dumps(debug_rec.get_results(), indent=4)
+        return res
 
 
 def main():
     # debug_ingest_file()
     query = input("Enter Query: ")
-    limit = int(input("Enter Limit: "))
-    k = int(input("Enter top k: "))
-    debug_instance = Debug(query, limit, k)
+    provider = llm_provider("groq")
+    debug_instance = Debug(
+        query=query,
+        limit=20,
+        k=10,
+        mode="ai",
+        provider=provider,
+        rewrite_query=True,
+    )
     print(f"\nQuery: {query}")
     # print(debug_instance.debug_search_docs())
     # print(debug_instance.debug_llm_context_builder())
     # print(debug_instance.debug_GenerateLLMContext())
     # print(debug_instance.debug_llm_generation())
-    print(debug_instance.debug_Recall(mode="ai", rewrite_query=True))
+    print(debug_instance.debug_Recall())
 
 
 if __name__ == "__main__":

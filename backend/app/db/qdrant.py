@@ -1,11 +1,13 @@
 import logging
-import statistics
 import uuid
+from math import exp
+from statistics import mean
 
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import Distance, PointStruct, VectorParams
+from sentence_transformers import CrossEncoder
 
 from app.core.constants import COLLECTION_NAME, EMBEDDING_DIM
 from app.core.settings import settings
@@ -17,6 +19,7 @@ logger = logging.getLogger(__name__)
 _client: QdrantClient | None = None
 _collection_checked = False
 doc_database = SQLiteDB()
+cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2")
 
 
 def get_qdrant_client() -> QdrantClient:
@@ -93,27 +96,55 @@ def ensure_collection_exists(
     logger.info("collection created", extra={"collection": collection_name})
 
 
-def filter_qdrant_results(
+def filter_results(
     results: list[dict],
     *,
-    min_relative: float = 0.7,
-    min_absolute: float | None = None,
+    min_normalized: float = 0.35,
+    drop_ratio: float = 0.25,
     fallback_top_k: int = 3,
 ):
     if not results:
         return []
 
-    max_score = results[0].get("score", 0.0)
+    best = results[0]["normalized_score"]
 
-    filtered = [r for r in results if r.get("score", 0.0) >= max_score * min_relative]
+    filtered = []
+    prev_score = best
 
-    if min_absolute is not None:
-        filtered = [r for r in filtered if r.get("score", 0.0) >= min_absolute]
+    for i, r in enumerate(results):
+        ns = r["normalized_score"]
 
-    if not filtered:
-        filtered = results[:fallback_top_k]
+        if ns < min_normalized:
+            break
+        if ns < best * drop_ratio:
+            break
+        if i > 0 and prev_score > 0 and (prev_score - ns) / prev_score > 0.4:
+            break
+
+        filtered.append(r)
+        prev_score = ns
+
+    if len(filtered) < fallback_top_k:
+        return results[:fallback_top_k]
 
     return filtered
+
+
+def normalize_score(results, a=0.4, e=1e-8):
+    """Normalize and combine cosine + cross-encoder scores"""
+    if not results:
+        return
+
+    for item in results:
+        cosine_score = item["score"]
+        cross_encoder_score = item["cross_encoder_score"]
+
+        cross_norm = 1 / (1 + exp(-cross_encoder_score))
+
+        final_score = a * cosine_score + (1 - a) * cross_norm
+
+        item["normalized_score"] = final_score
+        item["cross_norm"] = cross_norm
 
 
 def search_docs(query, limit=5, k=3):
@@ -202,10 +233,7 @@ def search_docs(query, limit=5, k=3):
 
             best_chunk = topk_chunks[0]
             scores = [c["score"] for c in chunks]
-            mean = statistics.mean(scores)
-            median = statistics.median(scores)
-            mode = statistics.median(scores)
-            topk_score = statistics.mean(scores[:k])
+            topk_score = mean(scores[:k])
 
             results.append(
                 {
@@ -221,19 +249,28 @@ def search_docs(query, limit=5, k=3):
                     "all_chunks": topk_chunks,
                     "created_at": row[5],
                     "all_scores": scores,
-                    "stats": {
-                        "mean": mean,
-                        "median": median,
-                        "mode": mode,
-                    },
                 }
             )
 
     results.sort(key=lambda item: item["score"], reverse=True)
-    max_score = results[0].get("score", 0.0)
-    final_res = filter_qdrant_results(
+
+    pairs = []
+    for item in results:
+        title = item["title"]
+        text = item["content"]
+        pairs.append([query, f"{title}-{text}"])
+    cross_encoder_scores = cross_encoder.predict(pairs)
+
+    for i, item in enumerate(results):
+        item["cross_encoder_score"] = cross_encoder_scores[i]
+
+    normalize_score(results)
+    results.sort(key=lambda item: item["normalized_score"], reverse=True)
+
+    final_res = filter_results(
         results,
-        min_absolute=0.3,
+        min_normalized=0.35,
+        drop_ratio=0.25,
         fallback_top_k=k,
     )
 
@@ -243,7 +280,6 @@ def search_docs(query, limit=5, k=3):
             "query": query,
             "total_matched": len(results),
             "after_filtering": len(final_res),
-            "max_score": max_score,
         },
     )
 

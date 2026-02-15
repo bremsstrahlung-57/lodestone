@@ -68,13 +68,19 @@ class Recall:
             title = docs.get("title", "")
             source = docs.get("source", "")
             score = docs.get("score", None)
+            cross_encoder_score = docs.get("cross_encoder_score", None).item()
+            cross_norm = docs.get("cross_norm", None)
+            normalized_score = docs.get("normalized_score", None)
             snippets = docs.get("all_chunks", [])
 
             res = {
                 "doc_id": doc_id,
                 "title": title,
                 "source": source,
+                "normalized_score": normalized_score,
                 "score": score,
+                "cross_encoder_score": cross_encoder_score,
+                "cross_norm": cross_norm,
                 "snippets": snippets,
             }
             self.RESULT["results"].append(res)

@@ -148,5 +148,5 @@ def llm_provider(default=None):
             logger.info("user selected groq provider")
             return "groq"
         case _:
-            logger.info("invalid selection, defaulting to groq provider")
-            return "groq"
+            logger.info("invalid selection")
+            return None
