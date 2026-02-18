@@ -1,0 +1,24 @@
+To craft a Brewing Stand in Minecraft, place a Blaze Rod in the center slot and three Cobblestone (or Black Stone/Cobbled Deepslate in Bedrock) across the bottom row of a crafting table, which creates the stand used for making potions with water bottles, blaze powder fuel, and various ingredients.
+Crafting Recipe 
+
+• Materials: 1 Blaze Rod + 3 Cobblestone (or variants). 
+• Placement: 
+
+	• Bottom Row: Cobblestone, Cobblestone, Cobblestone. 
+	• Center Slot: Blaze Rod.
+
+This video shows you how to craft a brewing stand: 
+How to Use a Brewing Stand (for Potions) 
+
+1. Fuel it: Place Blaze Powder in the top-left slot to power it. 
+2. Add Water Bottles: Place three Glass Bottles filled with water in the bottom three slots. 
+3. Add Ingredient: Place an ingredient (like Nether Wart for an Awkward Potion) in the top slot. 
+4. Brew: The potion will brew in the bottom slots, transforming from a water bottle to an awkward potion, and then to other potions with further ingredients.  
+
+Key Ingredients & Uses 
+
+• Blaze Powder: Fuels the stand (crafted from Blaze Rods). 
+• Nether Wart: The essential first ingredient to make Awkward Potions, the base for most potions. 
+• Water Bottles: Start with glass bottles filled from a water source. 
+• Modifiers: Ingredients like Glowstone Dust, Redstone, or Fermented Spider Eye change potion effects.
+

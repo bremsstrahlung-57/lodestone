@@ -1,0 +1,8 @@
+The Lottery Ticket Hypothesis (LTH) posits that dense, randomly initialized neural networks contain sparse sub-networks ("winning tickets") that, when trained in isolation from their original initialization, can achieve comparable or better accuracy than the full network in similar or fewer iterations. These sparse networks often represent only 10-20% of the original model's parameters.
+Key Aspects of the Lottery Ticket Hypothesis
+Definition of a "Winning Ticket": A subnetwork that, when trained from its original initialization, matches the performance of the dense network.
+Iterative Magnitude Pruning (IMP): The process used to find these tickets, involving training, pruning the lowest-magnitude weights, and resetting the remaining weights to their original values.
+Significance: If true, LTH suggests that massive, dense networks are not necessary for high performance, offering potential for more efficient, compressed models and faster training.
+Original Initialization: The hypothesis emphasizes that the specific initial weights of the winning ticket are crucial for its success.
+Applicability: While originally formulated for smaller networks, research has shown that this principle applies to more complex models and tasks, including vision transformers.
+The hypothesis was introduced by Jonathan Frankle and Michael Carbin in 2018.
