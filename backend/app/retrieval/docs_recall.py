@@ -57,7 +57,11 @@ class Recall:
         if self.rewrite_query:
             _query = self.new_query
 
-        self.searched_docs = search_docs(query=_query, limit=self.limit, k=self.k)
+        self.searched_docs = search_docs(
+            query=_query,
+            limit=self.limit,
+            k=self.k,
+        )
         logger.info(
             "search completed",
             extra={"query": _query, "doc_count": len(self.searched_docs)},

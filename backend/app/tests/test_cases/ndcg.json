@@ -1,0 +1,339 @@
+{
+    "cases": [
+        {
+            "query": "potion crafting",
+            "relevant_docs": {
+                "1c6d7ffee921dd47d72bc11a3cf91642223eecfee0d60c70f0d18ae523151964": {
+                    "relevance_grade": 3
+                }
+            }
+        },
+        {
+            "query": "souls like game set in japan",
+            "relevant_docs": {
+                "37daa4bacd7ef4c2c9779b6c1917a25891cf8ea5eeffe4204c73978f2628be18": {
+                    "relevance_grade": 3
+                },
+                "561c5e2415586a138733becd1cfd67ab8bbcbcc8e1013fefffadca75968cf8a4": {
+                    "relevance_grade": 1
+                },
+                "62e93f5fd1c0c9fb5d7b65d09119312ffa8cda1fc4744e4ffb37d67520527b1a": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "FromSoftware games with difficult boss fights",
+            "relevant_docs": {
+                "37daa4bacd7ef4c2c9779b6c1917a25891cf8ea5eeffe4204c73978f2628be18": {
+                    "relevance_grade": 3
+                },
+                "561c5e2415586a138733becd1cfd67ab8bbcbcc8e1013fefffadca75968cf8a4": {
+                    "relevance_grade": 3
+                },
+                "62e93f5fd1c0c9fb5d7b65d09119312ffa8cda1fc4744e4ffb37d67520527b1a": {
+                    "relevance_grade": 2
+                },
+                "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72": {
+                    "relevance_grade": 2
+                }
+            }
+        },
+        {
+            "query": "rpg",
+            "relevant_docs": {
+                "84169cf17fdd3b8b6a8a7f51ad0cbaba119e0817a78a5fc7e19cf379a9633b9f": {
+                    "relevance_grade": 3
+                },
+                "cc5e7bd8fd2d0160a2dcb9bee90afb17f4e9ccb8791e1888c0c1450720b4da8a": {
+                    "relevance_grade": 3
+                },
+                "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72": {
+                    "relevance_grade": 2
+                },
+                "0f4d41feedd4381842b5e925ad8446ead37b81b53ec5b024b7d8b25372662ac2": {
+                    "relevance_grade": 2
+                },
+                "b9db53a16cda76051d2badeb39e154e67755c75a0b337345102d8d1b24b9dc17": {
+                    "relevance_grade": 2
+                },
+                "561c5e2415586a138733becd1cfd67ab8bbcbcc8e1013fefffadca75968cf8a4": {
+                    "relevance_grade": 1
+                },
+                "37daa4bacd7ef4c2c9779b6c1917a25891cf8ea5eeffe4204c73978f2628be18": {
+                    "relevance_grade": 1
+                },
+                "62e93f5fd1c0c9fb5d7b65d09119312ffa8cda1fc4744e4ffb37d67520527b1a": {
+                    "relevance_grade": 1
+                },
+                "cf628ca34bae66d67fba654f204ca61c09c4d72ad4b4725308ef328228b7c6d3": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "games with deep narrative and character development",
+            "relevant_docs": {
+                "b9db53a16cda76051d2badeb39e154e67755c75a0b337345102d8d1b24b9dc17": {
+                    "relevance_grade": 3
+                },
+                "cc5e7bd8fd2d0160a2dcb9bee90afb17f4e9ccb8791e1888c0c1450720b4da8a": {
+                    "relevance_grade": 2
+                },
+                "0f4d41feedd4381842b5e925ad8446ead37b81b53ec5b024b7d8b25372662ac2": {
+                    "relevance_grade": 2
+                },
+                "84169cf17fdd3b8b6a8a7f51ad0cbaba119e0817a78a5fc7e19cf379a9633b9f": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "archaeology and ancient history discoveries",
+            "relevant_docs": {
+                "4a7db46f0821cca97439372064abd9a50887b18d22354c71585da358e1805715": {
+                    "relevance_grade": 3
+                },
+                "94c6839037273392db0b3ef28d3bde80fa9cf2c235ff4600bd6d454c38a2b55c": {
+                    "relevance_grade": 2
+                }
+            }
+        },
+        {
+            "query": "neural network image classification models",
+            "relevant_docs": {
+                "5a5c3bb46154e1e29209356730fd0433b443f84c072a6e592e92920664b5d16e": {
+                    "relevance_grade": 3
+                },
+                "e49e2fab9f56639d4bedc5c627d9ed675b9313e844658c592c6463594fd171e9": {
+                    "relevance_grade": 2
+                }
+            }
+        },
+        {
+            "query": "what is the story of elden ring",
+            "relevant_docs": {
+                "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72": {
+                    "relevance_grade": 3
+                }
+            }
+        },
+        {
+            "query": "open world games with detailed environments",
+            "relevant_docs": {
+                "b9db53a16cda76051d2badeb39e154e67755c75a0b337345102d8d1b24b9dc17": {
+                    "relevance_grade": 3
+                },
+                "84169cf17fdd3b8b6a8a7f51ad0cbaba119e0817a78a5fc7e19cf379a9633b9f": {
+                    "relevance_grade": 3
+                },
+                "cc5e7bd8fd2d0160a2dcb9bee90afb17f4e9ccb8791e1888c0c1450720b4da8a": {
+                    "relevance_grade": 2
+                },
+                "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72": {
+                    "relevance_grade": 2
+                },
+                "0f4d41feedd4381842b5e925ad8446ead37b81b53ec5b024b7d8b25372662ac2": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "Lovecraftian horror and cosmic themes in games",
+            "relevant_docs": {
+                "561c5e2415586a138733becd1cfd67ab8bbcbcc8e1013fefffadca75968cf8a4": {
+                    "relevance_grade": 3
+                },
+                "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72": {
+                    "relevance_grade": 1
+                },
+                "cf628ca34bae66d67fba654f204ca61c09c4d72ad4b4725308ef328228b7c6d3": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "ancient Roman waste management and urban planning",
+            "relevant_docs": {
+                "94c6839037273392db0b3ef28d3bde80fa9cf2c235ff4600bd6d454c38a2b55c": {
+                    "relevance_grade": 3
+                },
+                "4a7db46f0821cca97439372064abd9a50887b18d22354c71585da358e1805715": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "model pruning and sparse neural networks",
+            "relevant_docs": {
+                "1d558a4f19d2cd445fe6bc62050a6e506d7f88ec8d80262c75c6454758d46462": {
+                    "relevance_grade": 3
+                },
+                "e49e2fab9f56639d4bedc5c627d9ed675b9313e844658c592c6463594fd171e9": {
+                    "relevance_grade": 1
+                },
+                "5a5c3bb46154e1e29209356730fd0433b443f84c072a6e592e92920664b5d16e": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "grilled seafood with Mexican flavors",
+            "relevant_docs": {
+                "604239e95209abff55a2f6aaa0d73f92179d1952974557bf0de165bc3a7980e9": {
+                    "relevance_grade": 3
+                }
+            }
+        },
+        {
+            "query": "melee combat games with swords and axes",
+            "relevant_docs": {
+                "37daa4bacd7ef4c2c9779b6c1917a25891cf8ea5eeffe4204c73978f2628be18": {
+                    "relevance_grade": 3
+                },
+                "62e93f5fd1c0c9fb5d7b65d09119312ffa8cda1fc4744e4ffb37d67520527b1a": {
+                    "relevance_grade": 3
+                },
+                "0f4d41feedd4381842b5e925ad8446ead37b81b53ec5b024b7d8b25372662ac2": {
+                    "relevance_grade": 2
+                },
+                "cc5e7bd8fd2d0160a2dcb9bee90afb17f4e9ccb8791e1888c0c1450720b4da8a": {
+                    "relevance_grade": 2
+                },
+                "561c5e2415586a138733becd1cfd67ab8bbcbcc8e1013fefffadca75968cf8a4": {
+                    "relevance_grade": 2
+                },
+                "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72": {
+                    "relevance_grade": 1
+                },
+                "cf628ca34bae66d67fba654f204ca61c09c4d72ad4b4725308ef328228b7c6d3": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "first person shooter with resource management mechanics",
+            "relevant_docs": {
+                "2f53b7cf63f4ef676a56dbb7d18a340cadbcb4bbb90c016118e0b02b8a92bcb8": {
+                    "relevance_grade": 3
+                }
+            }
+        },
+        {
+            "query": "retrieval augmented generation for language models",
+            "relevant_docs": {
+                "6e6bcfce6483b8eff08481dfecf06aecf120f5888f6e49316c67b4adac6b5856": {
+                    "relevance_grade": 3
+                },
+                "5a5c3bb46154e1e29209356730fd0433b443f84c072a6e592e92920664b5d16e": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "zero-shot learning and multimodal AI",
+            "relevant_docs": {
+                "5a5c3bb46154e1e29209356730fd0433b443f84c072a6e592e92920664b5d16e": {
+                    "relevance_grade": 3
+                },
+                "e49e2fab9f56639d4bedc5c627d9ed675b9313e844658c592c6463594fd171e9": {
+                    "relevance_grade": 1
+                },
+                "1d558a4f19d2cd445fe6bc62050a6e506d7f88ec8d80262c75c6454758d46462": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "Norse mythology and father son relationship in games",
+            "relevant_docs": {
+                "0f4d41feedd4381842b5e925ad8446ead37b81b53ec5b024b7d8b25372662ac2": {
+                    "relevance_grade": 3
+                },
+                "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "dream about a wedding ceremony in a hill station",
+            "relevant_docs": {
+                "838bb6d5c0a6d9d4db38a47b8cdb80b00e1990169f4a21c9b491d10f07d10b04": {
+                    "relevance_grade": 3
+                }
+            }
+        },
+        {
+            "query": "DNA extraction and genome sequencing from ancient specimens",
+            "relevant_docs": {
+                "4a7db46f0821cca97439372064abd9a50887b18d22354c71585da358e1805715": {
+                    "relevance_grade": 3
+                },
+                "94c6839037273392db0b3ef28d3bde80fa9cf2c235ff4600bd6d454c38a2b55c": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "curvature of space and Nikola Tesla",
+            "relevant_docs": {
+                "5298af27b96d83d6b01a5c80e26bedf31200979867683426e93ac1c1ed7d814a": {
+                    "relevance_grade": 3
+                }
+            }
+        },
+        {
+            "query": "2D metroidvania with interconnected map",
+            "relevant_docs": {
+                "cf628ca34bae66d67fba654f204ca61c09c4d72ad4b4725308ef328228b7c6d3": {
+                    "relevance_grade": 3
+                },
+                "62e93f5fd1c0c9fb5d7b65d09119312ffa8cda1fc4744e4ffb37d67520527b1a": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "cowboys outlaws and the American wild west",
+            "relevant_docs": {
+                "b9db53a16cda76051d2badeb39e154e67755c75a0b337345102d8d1b24b9dc17": {
+                    "relevance_grade": 3
+                }
+            }
+        },
+        {
+            "query": "games about death decay and the end of an era",
+            "relevant_docs": {
+                "62e93f5fd1c0c9fb5d7b65d09119312ffa8cda1fc4744e4ffb37d67520527b1a": {
+                    "relevance_grade": 3
+                },
+                "d1a399891751cdf27cc8265d9745e6a284daf4bbd1d8a44bbb8d00c611cb5c72": {
+                    "relevance_grade": 3
+                },
+                "561c5e2415586a138733becd1cfd67ab8bbcbcc8e1013fefffadca75968cf8a4": {
+                    "relevance_grade": 2
+                },
+                "37daa4bacd7ef4c2c9779b6c1917a25891cf8ea5eeffe4204c73978f2628be18": {
+                    "relevance_grade": 2
+                },
+                "cf628ca34bae66d67fba654f204ca61c09c4d72ad4b4725308ef328228b7c6d3": {
+                    "relevance_grade": 1
+                }
+            }
+        },
+        {
+            "query": "AI models that understand both images and text together",
+            "relevant_docs": {
+                "5a5c3bb46154e1e29209356730fd0433b443f84c072a6e592e92920664b5d16e": {
+                    "relevance_grade": 3
+                },
+                "e49e2fab9f56639d4bedc5c627d9ed675b9313e844658c592c6463594fd171e9": {
+                    "relevance_grade": 2
+                },
+                "1d558a4f19d2cd445fe6bc62050a6e506d7f88ec8d80262c75c6454758d46462": {
+                    "relevance_grade": 1
+                }
+            }
+        }
+    ]
+}

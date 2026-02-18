@@ -6,13 +6,13 @@ from app.retrieval.docs_recall import Recall
 
 
 def load_test_cases():
-    with open("app/tests/recall_test.json", "r") as f:
+    with open("app/tests/test_cases/recall_test.json", "r") as f:
         data = json.load(f)
         return data["test_cases"]
 
 
 def load_eval_json_test_cases():
-    with open("app/tests/eval.json", "r") as f:
+    with open("app/tests/test_cases/eval.json", "r") as f:
         return json.load(f)
 
 

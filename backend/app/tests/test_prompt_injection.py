@@ -6,7 +6,7 @@ from app.retrieval.docs_recall import Recall
 
 
 def load_prompt_injection_test_json_cases():
-    with open("app/tests/prompt_injection_test.json", "r") as f:
+    with open("app/tests/test_cases/prompt_injection_test.json", "r") as f:
         data = json.load(f)
         return data["cases"]
 

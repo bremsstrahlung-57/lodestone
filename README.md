@@ -6,7 +6,7 @@ You can upload files, text, and bookmarks, and later retrieve them using natural
 
 It is designed to replace manual searching across folders, notes apps, and websites with a single searchable memory.
 
-## Current Version (v0.4.3)
+## Current Version (v0.4.4)
 ### What it does
 
 - **Semantic search** over your own documents using sentence embeddings (MiniLM-L6-v2)

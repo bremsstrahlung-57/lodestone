@@ -52,12 +52,11 @@ class Debug:
         self.rewrite_query = rewrite_query
 
     def debug_search_docs(self):
-        results = search_docs(
-            self.query, self.limit, cross_encoder_rerank=self.cross_encoder_rerank
-        )
-        print(results)
+        results = search_docs(query=self.query, limit=self.limit, k=self.k)
+
         if results == []:
             print("Couldn't find any matching data related to your query :(")
+
         for i in results:
             doc_id = i["doc_id"]
             score = i["score"]
@@ -72,9 +71,26 @@ class Debug:
             all_scores = i["all_scores"]
             cross_encoder_score = i["cross_encoder_score"]
             normalized_score = i["normalized_score"]
-
+            rank = i["rank"]
+            cross_norm = i["cross_norm"]
+            cosine_norm = i["cosine_norm"]
             print(
-                f"Doc ID: {doc_id}\nScore: {score:.4f}\nCrossEncoder Score: {cross_encoder_score:.4f}\nNormalized Score: {normalized_score}\nMax Score: {max_score:.4f}\nAll Scores: {all_scores}\nSource: {source}\nTitle: {title}\nDoc: {doc}\nChunk Doc: {chunk_doc}\nChunk ID: {chunk_id}\nTotal Chunks: {total_chunks}\nCreated At: {created_at}\n"
+                f"rank: {rank}\n"
+                f"title: {title}\n"
+                f"doc: {doc}\n"
+                f"source: {source}\n"
+                f"created_at: {created_at}\n"
+                f"doc_id: {doc_id}\n"
+                f"normalized_score: {normalized_score}\n"
+                f"score: {score}\n"
+                f"cross_encoder_score: {cross_encoder_score}\n"
+                f"cosine_norm: {cosine_norm}\n"
+                f"cross_norm: {cross_norm}\n"
+                f"max_score: {max_score}\n"
+                f"chunk_doc: {chunk_doc}\n"
+                f"chunk_id: {chunk_id}\n"
+                f"total_chunks: {total_chunks}\n"
+                f"all_scores: {all_scores}\n"
             )
 
     def debug_llm_context_builder(self):
@@ -114,18 +130,18 @@ def main():
     provider = llm_provider("groq")
     debug_instance = Debug(
         query=query,
-        limit=20,
-        k=10,
+        limit=50,
+        k=5,
         mode="ai",
         provider=provider,
         rewrite_query=True,
     )
     print(f"\nQuery: {query}")
-    # print(debug_instance.debug_search_docs())
+    debug_instance.debug_search_docs()
     # print(debug_instance.debug_llm_context_builder())
     # print(debug_instance.debug_GenerateLLMContext())
     # print(debug_instance.debug_llm_generation())
-    print(debug_instance.debug_Recall())
+    # print(debug_instance.debug_Recall())
 
 
 if __name__ == "__main__":

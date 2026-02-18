@@ -8,6 +8,7 @@ from qdrant_client.http import models
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import Distance, PointStruct, VectorParams
 from sentence_transformers import CrossEncoder
+from torch import cuda
 
 from app.core.constants import COLLECTION_NAME, EMBEDDING_DIM
 from app.core.settings import settings
@@ -15,11 +16,14 @@ from app.db.sqlitedb import SQLiteDB
 from app.embeddings.minilm import embed
 
 logger = logging.getLogger(__name__)
-
+device = "cuda" if cuda.is_available() else "cpu"
 _client: QdrantClient | None = None
 _collection_checked = False
 doc_database = SQLiteDB()
-cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2")
+cross_encoder = CrossEncoder(
+    "cross-encoder/ms-marco-TinyBERT-L2-v2",
+    device=device,
+)
 
 
 def get_qdrant_client() -> QdrantClient:
@@ -139,15 +143,25 @@ def normalize_score(results, a=0.4, e=1e-8):
         cosine_score = item["score"]
         cross_encoder_score = item["cross_encoder_score"]
 
+        cosine_norm = (1 + cosine_score) / 2
         cross_norm = 1 / (1 + exp(-cross_encoder_score))
 
-        final_score = a * cosine_score + (1 - a) * cross_norm
+        final_score = a * cosine_norm + (1 - a) * cross_norm
 
         item["normalized_score"] = final_score
         item["cross_norm"] = cross_norm
+        item["cosine_norm"] = cosine_norm
 
 
-def search_docs(query, limit=5, k=3):
+def search_docs(
+    query: str,
+    limit: int = 50,
+    k: int = 5,
+    a: float = 0.1,
+    e: float = 1e-8,
+    min_normalized: float = 0.35,
+    drop_ratio: float = 0.25,
+):
     """Search for a query from the Vector DB"""
     logger.info("searching docs", extra={"query": query, "limit": limit, "k": k})
 
@@ -232,8 +246,8 @@ def search_docs(query, limit=5, k=3):
             ]
 
             best_chunk = topk_chunks[0]
-            scores = [c["score"] for c in chunks]
-            topk_score = mean(scores[:k])
+            scores = [c["score"] for c in sorted_chunks[:k]]
+            topk_score = mean(scores)
 
             results.append(
                 {
@@ -259,31 +273,34 @@ def search_docs(query, limit=5, k=3):
         title = item["title"]
         text = item["content"]
         pairs.append([query, f"{title}-{text}"])
-    cross_encoder_scores = cross_encoder.predict(pairs)
+    cross_encoder_scores = cross_encoder.predict(pairs, batch_size=32)
 
     for i, item in enumerate(results):
         item["cross_encoder_score"] = cross_encoder_scores[i]
 
-    normalize_score(results)
+    normalize_score(results, a, e)
     results.sort(key=lambda item: item["normalized_score"], reverse=True)
 
-    final_res = filter_results(
+    final_results = filter_results(
         results,
-        min_normalized=0.35,
-        drop_ratio=0.25,
+        min_normalized=min_normalized,
+        drop_ratio=drop_ratio,
         fallback_top_k=k,
     )
+
+    for i, item in enumerate(final_results, start=1):
+        item["rank"] = i
 
     logger.info(
         "search complete",
         extra={
             "query": query,
             "total_matched": len(results),
-            "after_filtering": len(final_res),
+            "after_filtering": len(final_results),
         },
     )
 
-    return final_res
+    return final_results[:k]
 
 
 def ingest_data(docs):
