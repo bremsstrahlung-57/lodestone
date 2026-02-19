@@ -6,6 +6,60 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.5.4] - 2026-02-19
+
+### Added
+
+- Request ID propagation through API and Recall; return `X-Request-ID` and `X-Response-Time` headers.
+- Total latency tracking in response metadata.
+
+### Changed
+
+- Restructured response format from Recall.
+- Standardized LLM latency field to `response_latency_ms` and updated logs.
+- Set API `limit` parameter minimum to 5.
+- Updated README.md, CONTRIBUTING.md and TESTING.md with improved documentation.
+- Updated tests to match new return structure and improved error handling in API calls.
+
+---
+
+## [0.4.4] - 2026-02-18
+
+### Added
+
+- NDCG test and test data (`ndcg.json`).
+- Test cases for query rewriting improvement over base retrieval.
+- Manual tests for prompt injection prevention (`prompt_injection_test.json`).
+
+### Changed
+
+- Improved prompts for preventing prompt injection.
+- Optimized cross-encoder for faster speeds on GPU.
+- Reorganized test cases into `test_cases/` subdirectory.
+- Removed upper limit for `limit` and `k` values in API.
+- Renamed `vector_roundtrip.py` to `cli.py`.
+
+---
+
+## [0.4.3] - 2026-02-15
+
+### Added
+
+- Cross-encoder reranking using `cross-encoder/ms-marco-TinyBERT-L2-v2`.
+- Normalized scoring combining cosine similarity and cross-encoder scores.
+
+### Changed
+
+- Replaced `filter_qdrant_results` with `filter_results` using normalized scores.
+- Updated retrieval pipeline to incorporate cross-encoder reranking.
+
+### Removed
+
+- `refine_results` function.
+- Unused functions from retrieval module.
+
+---
+
 ## [0.4.2] - 2026-02-11
 
 ### Added
