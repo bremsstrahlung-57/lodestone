@@ -8,7 +8,7 @@ It is designed to replace manual searching across folders, notes apps, and websi
 
 ---
 
-## **Current Version (v0.4.4)**
+## **Current Version (v0.5.4)**
 ### What it does
 
 - **Semantic search** over your own documents using sentence embeddings (MiniLM-L6-v2)

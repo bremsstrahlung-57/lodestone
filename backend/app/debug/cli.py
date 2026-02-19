@@ -113,6 +113,7 @@ class Debug:
 
     def debug_Recall(self):
         debug_rec = Recall(
+            request_id="debug_cli_recall",
             query=self.query,
             limit=self.limit,
             k=self.k,
@@ -127,21 +128,24 @@ class Debug:
 def main():
     # debug_ingest_file()
     query = input("Enter Query: ")
+    if query is None or query.strip() == "":
+        print("Query can't be empty")
+        raise
     provider = llm_provider("groq")
     debug_instance = Debug(
         query=query,
         limit=50,
-        k=5,
+        k=3,
         mode="ai",
         provider=provider,
         rewrite_query=True,
     )
     print(f"\nQuery: {query}")
-    debug_instance.debug_search_docs()
+    # debug_instance.debug_search_docs()
     # print(debug_instance.debug_llm_context_builder())
     # print(debug_instance.debug_GenerateLLMContext())
     # print(debug_instance.debug_llm_generation())
-    # print(debug_instance.debug_Recall())
+    print(debug_instance.debug_Recall())
 
 
 if __name__ == "__main__":

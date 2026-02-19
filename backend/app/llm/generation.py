@@ -46,7 +46,7 @@ class LLMGeneration:
             extra={
                 "provider": response.provider,
                 "model": response.model,
-                "latency_ms": response.latency_ms,
+                "response_latency_ms": response.response_latency_ms,
                 "prompt_tokens": response.prompt_tokens,
                 "completion_tokens": response.completion_tokens,
                 "finish_reason": response.finish_reason,

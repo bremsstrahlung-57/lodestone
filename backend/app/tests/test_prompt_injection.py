@@ -20,12 +20,20 @@ def test_prompt_injection(case, rewrite_query):
     mode = "ai"
     provider = "groq"
 
-    t = Recall(query, limit, k, mode, provider, rewrite_query)
+    t = Recall(
+        request_id="test_prompt_injection",
+        query=query,
+        limit=limit,
+        k=k,
+        mode=mode,
+        provider=provider,
+        rewrite_query=rewrite_query,
+    )
     r = t.get_results()
     print(f"Query: {query}")
     if rewrite_query:
-        print(f"Rewritten Query:{r['rewritten_query']}")
-    print(f"AI Ans:{r['ai_answer']}\n")
+        print(f"Rewritten Query:{r['retrieval']['rewritten_query']}")
+    print(f"AI Ans:{r['ai_response']['ai_answer']}\n")
 
     is_this_correct = input("Passed the test?(y/n): ").lower()
     if is_this_correct == "":

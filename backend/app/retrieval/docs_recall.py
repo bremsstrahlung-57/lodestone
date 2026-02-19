@@ -1,4 +1,5 @@
 import logging
+from time import perf_counter
 
 from app.db.qdrant import search_docs
 from app.llm.generation import LLMGeneration, prompt_generation
@@ -9,6 +10,7 @@ logger = logging.getLogger(__name__)
 class Recall:
     def __init__(
         self,
+        request_id: str,
         query: str,
         limit: int,
         k: int,
@@ -16,6 +18,7 @@ class Recall:
         provider: str | None = None,
         rewrite_query: bool = False,
     ):
+        self.request_id = request_id
         self.user_query = query
         self.mode = mode
         self.limit = limit
@@ -33,6 +36,7 @@ class Recall:
         logger.info(
             "recall initialised",
             extra={
+                "request_id": self.request_id,
                 "query": query,
                 "limit": limit,
                 "k": k,
@@ -44,27 +48,46 @@ class Recall:
         )
 
         self.RESULT = {
-            "query": self.user_query,
-            "rewritten_query": self.new_query,
-            "mode": self.mode,
-            "results": [],
-            "ai_answer": None,
-            "provider": None,
-            "latency_ms": None,
+            "retrieval": {
+                "query": self.user_query,
+                "rewritten_query": self.new_query,
+                "mode": self.mode,
+                "results": [],
+                "retrieval_latency_ms": 0.0,
+            },
+            "ai_response": {
+                "ai_answer": None,
+                "provider": None,
+                "response_latency_ms": 0.0,
+            },
+            "meta": {
+                "request_id": self.request_id,
+                "total_latency_ms": None,
+            },
         }
 
         _query = self.user_query
         if self.rewrite_query:
             _query = self.new_query
 
+        start = perf_counter()
         self.searched_docs = search_docs(
             query=_query,
             limit=self.limit,
             k=self.k,
         )
+        end = perf_counter()
+        total = (end - start) * 1000
+        self.RESULT["retrieval"]["retrieval_latency_ms"] = round(total, 2)
+
         logger.info(
             "search completed",
-            extra={"query": _query, "doc_count": len(self.searched_docs)},
+            extra={
+                "request_id": self.request_id,
+                "query": _query,
+                "doc_count": len(self.searched_docs),
+                "retrieval_latency_ms": total,
+            },
         )
 
         for docs in self.searched_docs:
@@ -87,15 +110,16 @@ class Recall:
                 "cross_norm": cross_norm,
                 "snippets": snippets,
             }
-            self.RESULT["results"].append(res)
+            self.RESULT["retrieval"]["results"].append(res)
 
     def retrieval_result(self):
         logger.info(
             "retrieval mode returning results",
             extra={
+                "request_id": self.request_id,
                 "query": self.user_query,
                 "rewritten_query": self.new_query,
-                "result_count": len(self.RESULT["results"]),
+                "result_count": len(self.RESULT["retrieval"]["results"]),
             },
         )
 
@@ -106,15 +130,21 @@ class Recall:
 
         logger.info(
             "generating LLM response",
-            extra={"provider": self.provider, "query": self.new_query},
+            extra={
+                "request_id": self.request_id,
+                "provider": self.provider,
+                "query": self.new_query,
+            },
         )
         prompt = prompt_generation(self.new_query, self.searched_docs)
         llm_response = self.ai_mode.generate(provider=self.provider, prompt=prompt)
 
-        self.RESULT["ai_answer"] = llm_response.text
-        self.RESULT["provider"] = llm_response.provider
-        self.RESULT["latency_ms"] = llm_response.latency_ms
-        self.RESULT["llm"] = {
+        self.RESULT["ai_response"]["ai_answer"] = llm_response.text
+        self.RESULT["ai_response"]["provider"] = llm_response.provider
+        self.RESULT["ai_response"]["response_latency_ms"] = (
+            llm_response.response_latency_ms
+        )
+        self.RESULT["ai_response"]["llm"] = {
             "prompt_tokens": llm_response.prompt_tokens,
             "completion_tokens": llm_response.completion_tokens,
             "finish_reason": llm_response.finish_reason,
@@ -123,8 +153,9 @@ class Recall:
         logger.info(
             "LLM response received",
             extra={
+                "request_id": self.request_id,
                 "provider": llm_response.provider,
-                "latency_ms": llm_response.latency_ms,
+                "response_latency_ms": llm_response.response_latency_ms,
                 "prompt_tokens": llm_response.prompt_tokens,
                 "completion_tokens": llm_response.completion_tokens,
                 "finish_reason": llm_response.finish_reason,
@@ -135,5 +166,10 @@ class Recall:
         self.retrieval_result()
         if self.mode == "ai":
             self.ai_result()
+
+        self.RESULT["meta"]["total_latency_ms"] = (
+            self.RESULT["retrieval"]["retrieval_latency_ms"]
+            + self.RESULT["ai_response"]["response_latency_ms"]
+        )
 
         return self.RESULT

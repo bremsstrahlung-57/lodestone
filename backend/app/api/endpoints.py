@@ -1,9 +1,12 @@
 import logging
+import time
 from importlib.metadata import version
 from typing import Literal, Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse
 
+from app.ingest.doc_id import generate_request_id
 from app.llm.client import LLMProvider
 from app.retrieval.docs_recall import Recall
 
@@ -25,15 +28,19 @@ def health_check():
 @router.get("/search")
 def search_api(
     query: str = Query(..., min_length=3),
-    k: int = Query(3, ge=1),
-    limit: int = Query(5, ge=5),
+    k: int = Query(5, ge=1),
+    limit: int = Query(50, ge=5),
     mode: Literal["retrieval", "ai"] = Query("retrieval"),
     provider: Optional[LLMProvider] = Query(None),
     rewrite_query: bool = Query(False),
 ):
+    request_id = generate_request_id()
+    start_time = time.perf_counter()
+
     logger.info(
         "search request received",
         extra={
+            "request_id": request_id,
             "query": query,
             "mode": mode,
             "limit": limit,
@@ -45,6 +52,7 @@ def search_api(
 
     try:
         recall_init = Recall(
+            request_id=request_id,
             query=query,
             limit=limit,
             k=k,
@@ -52,21 +60,37 @@ def search_api(
             provider=provider,
             rewrite_query=rewrite_query,
         )
+
         result = recall_init.get_results()
-        result_count = len(result.get("results", []))
+
+        total_latency = (time.perf_counter() - start_time) * 1000
+
+        headers = {
+            "X-Request-ID": request_id,
+            "X-Response-Time": f"{round(total_latency, 2)}ms",
+        }
+
         logger.info(
             "search request completed",
             extra={
+                "request_id": request_id,
                 "query": query,
                 "mode": mode,
-                "result_count": result_count,
-                "has_ai_answer": result.get("ai_answer") is not None,
+                "result_count": len(result.get("retrieval", {}).get("results", [])),
+                "has_ai_answer": result.get("ai_response", {}).get("ai_answer")
+                is not None,
             },
         )
-        return result
-    except Exception:
+
+        return JSONResponse(content=result, headers=headers)
+
+    except Exception as e:
         logger.exception(
             "search request failed",
-            extra={"query": query, "mode": mode, "provider": provider},
+            extra={
+                "request_id": request_id,
+                "query": query,
+                "error": e,
+            },
         )
-        raise
+        raise HTTPException(status_code=500, detail="Internal Server Error")

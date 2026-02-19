@@ -23,7 +23,7 @@ def get_model() -> SentenceTransformer:
 def embed(text: str) -> list[float]:
     """Embed given str input"""
     model = get_model()
-    embedding = model.encode(text, normalize_embeddings=True)
+    embedding = model.encode(text, normalize_embeddings=True, show_progress_bar=False)
     vector = embedding.tolist()
     logger.debug(
         "text embedded", extra={"text_len": len(text), "vector_dim": len(vector)}

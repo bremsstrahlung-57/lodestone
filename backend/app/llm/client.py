@@ -88,7 +88,7 @@ class LLMResponse:
     text: str | None
     provider: str
     model: str
-    latency_ms: float
+    response_latency_ms: float
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     finish_reason: str | None = None
@@ -139,7 +139,7 @@ class GeminiLLM(BaseLLM):
             "gemini response parsed",
             extra={
                 "model": self.model,
-                "latency_ms": round(latency_ms, 2),
+                "response_latency_ms": round(latency_ms, 2),
                 "prompt_tokens": prompt_tokens,
                 "completion_tokens": completion_tokens,
                 "finish_reason": finish_reason,
@@ -150,7 +150,7 @@ class GeminiLLM(BaseLLM):
             text=raw.text,
             provider="gemini",
             model=self.model,
-            latency_ms=latency_ms,
+            response_latency_ms=latency_ms,
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
             finish_reason=finish_reason,
@@ -205,7 +205,7 @@ class GroqLLM(BaseLLM):
             "groq response parsed",
             extra={
                 "model": self.model,
-                "latency_ms": round(latency_ms, 2),
+                "response_latency_ms": round(latency_ms, 2),
                 "prompt_tokens": prompt_tokens,
                 "completion_tokens": completion_tokens,
                 "finish_reason": finish_reason,
@@ -216,7 +216,7 @@ class GroqLLM(BaseLLM):
             text=raw.choices[0].message.content,
             provider="groq",
             model=self.model,
-            latency_ms=latency_ms,
+            response_latency_ms=latency_ms,
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
             finish_reason=finish_reason,

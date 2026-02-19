@@ -1,4 +1,5 @@
 import logging
+import time
 import uuid
 from math import exp
 from statistics import mean
@@ -8,7 +9,7 @@ from qdrant_client.http import models
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import Distance, PointStruct, VectorParams
 from sentence_transformers import CrossEncoder
-from torch import cuda
+from torch.cuda import is_available
 
 from app.core.constants import COLLECTION_NAME, EMBEDDING_DIM
 from app.core.settings import settings
@@ -16,14 +17,11 @@ from app.db.sqlitedb import SQLiteDB
 from app.embeddings.minilm import embed
 
 logger = logging.getLogger(__name__)
-device = "cuda" if cuda.is_available() else "cpu"
+device = "cuda" if is_available() else "cpu"
 _client: QdrantClient | None = None
 _collection_checked = False
 doc_database = SQLiteDB()
-cross_encoder = CrossEncoder(
-    "cross-encoder/ms-marco-TinyBERT-L2-v2",
-    device=device,
-)
+cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2", device=device)
 
 
 def get_qdrant_client() -> QdrantClient:
@@ -131,7 +129,7 @@ def filter_results(
     if len(filtered) < fallback_top_k:
         return results[:fallback_top_k]
 
-    return filtered
+    return filtered[:fallback_top_k]
 
 
 def normalize_score(results, a=0.4, e=1e-8):
@@ -273,7 +271,9 @@ def search_docs(
         title = item["title"]
         text = item["content"]
         pairs.append([query, f"{title}-{text}"])
-    cross_encoder_scores = cross_encoder.predict(pairs, batch_size=32)
+    cross_encoder_scores = cross_encoder.predict(
+        pairs, batch_size=32, show_progress_bar=False
+    )
 
     for i, item in enumerate(results):
         item["cross_encoder_score"] = cross_encoder_scores[i]
@@ -300,12 +300,13 @@ def search_docs(
         },
     )
 
-    return final_results[:k]
+    return final_results
 
 
 def ingest_data(docs):
     """Upsert data in Vector DB"""
     logger.info("ingesting data into Qdrant", extra={"doc_count": len(docs)})
+    start_time = time.perf_counter()
 
     client: QdrantClient = get_qdrant_client()
     points = []
@@ -333,9 +334,16 @@ def ingest_data(docs):
         points=points,
     )
 
+    end_time = time.perf_counter()
+    total_time = end_time - start_time
+
     logger.info(
         "data ingested successfully",
-        extra={"points_upserted": len(points), "collection": COLLECTION_NAME},
+        extra={
+            "points_upserted": len(points),
+            "collection": COLLECTION_NAME,
+            "time_taken": total_time,
+        },
     )
 
     return client.get_collection(COLLECTION_NAME)
@@ -346,6 +354,7 @@ def fetch_chunk_by_ids(doc_id, chunk_ids):
         "fetching chunks by ids",
         extra={"doc_id": doc_id, "chunk_ids": chunk_ids},
     )
+    st = time.perf_counter()
 
     client = get_qdrant_client()
 
@@ -368,9 +377,17 @@ def fetch_chunk_by_ids(doc_id, chunk_ids):
     )
     points, _ = result
 
+    end = time.perf_counter()
+    tt = (end - st) * 1000
+
     logger.debug(
         "chunks fetched",
-        extra={"doc_id": doc_id, "requested": len(chunk_ids), "returned": len(points)},
+        extra={
+            "doc_id": doc_id,
+            "requested": len(chunk_ids),
+            "returned": len(points),
+            "time_taken": tt,
+        },
     )
 
     return points
