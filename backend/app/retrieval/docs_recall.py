@@ -95,7 +95,8 @@ class Recall:
             title = docs.get("title", "")
             source = docs.get("source", "")
             score = docs.get("score", None)
-            cross_encoder_score = docs.get("cross_encoder_score", None).item()
+            raw_ce = docs.get("cross_encoder_score", None)
+            cross_encoder_score = raw_ce.item() if raw_ce is not None else None
             cross_norm = docs.get("cross_norm", None)
             normalized_score = docs.get("normalized_score", None)
             snippets = docs.get("all_chunks", [])
@@ -144,23 +145,39 @@ class Recall:
         self.RESULT["ai_response"]["response_latency_ms"] = (
             llm_response.response_latency_ms
         )
-        self.RESULT["ai_response"]["llm"] = {
-            "prompt_tokens": llm_response.prompt_tokens,
-            "completion_tokens": llm_response.completion_tokens,
-            "finish_reason": llm_response.finish_reason,
-        }
-
-        logger.info(
-            "LLM response received",
-            extra={
-                "request_id": self.request_id,
-                "provider": llm_response.provider,
-                "response_latency_ms": llm_response.response_latency_ms,
+        if llm_response.status == "success":
+            self.RESULT["ai_response"]["llm"] = {
                 "prompt_tokens": llm_response.prompt_tokens,
                 "completion_tokens": llm_response.completion_tokens,
                 "finish_reason": llm_response.finish_reason,
-            },
-        )
+            }
+            logger.info(
+                "LLM response received",
+                extra={
+                    "request_id": self.request_id,
+                    "provider": llm_response.provider,
+                    "response_latency_ms": llm_response.response_latency_ms,
+                    "prompt_tokens": llm_response.prompt_tokens,
+                    "completion_tokens": llm_response.completion_tokens,
+                    "finish_reason": llm_response.finish_reason,
+                },
+            )
+        else:
+            self.RESULT["ai_response"]["error"] = {
+                "error_code": llm_response.error_code,
+                "error": llm_response.error,
+                "status": llm_response.status,
+            }
+            logger.error(
+                "error generating llm response",
+                extra={
+                    "request_id": self.request_id,
+                    "provider": llm_response.provider,
+                    "error_code": llm_response.error_code,
+                    "error": llm_response.error,
+                    "status": llm_response.status,
+                },
+            )
 
     def get_results(self):
         self.retrieval_result()

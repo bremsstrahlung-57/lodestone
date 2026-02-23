@@ -8,12 +8,12 @@ It is designed to replace manual searching across folders, notes apps, and websi
 
 ---
 
-## **Current Version (v0.5.4)**
+## **Current Version (v0.6.4)**
 ### What it does
 
 - **Semantic search** over your own documents using sentence embeddings (MiniLM-L6-v2)
 - **Two search modes** — plain retrieval or AI-answered with context from your docs
-- **Multiple LLM providers** — Gemini and Groq (LLaMA), switchable per request
+- **Multiple LLM providers** — Anthropic, OpenAI, Gemini and Groq, switchable per request
 - **Chunking with overlap** — documents are split into overlapping chunks for better retrieval coverage
 - **Chunk window expansion** — when a chunk matches, neighboring chunks are pulled in for fuller context
 - **Score-based filtering** — results are ranked and filtered so you don't get garbage matches back

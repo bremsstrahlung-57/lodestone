@@ -7,7 +7,7 @@ Recall includes a deterministic test suite that validates retrieval quality, ran
 All tests run against a fixed, canonical sample corpus located at:
 
 ```
-app/debug/samples/
+app/scripts/samples/
 ```
 
 This dataset is intentionally version-controlled to ensure reproducible results across environments and CI.
@@ -64,5 +64,5 @@ pytest app/tests/test_prompt_injection.py -v -s
 ### Writing New Tests
 
 - Add test cases to the relevant JSON file in `app/tests/test_cases/`, or create a new `test_*.py` module.
-- Use the canonical sample corpus in `app/debug/samples/` — do not add or modify sample files without discussion, as it affects all retrieval and ranking assertions.
+- Use the canonical sample corpus in `app/scripts/samples/` — do not add or modify sample files without discussion, as it affects all retrieval and ranking assertions.
 - Use `pytest.mark.parametrize` for data-driven tests to keep things clean and extensible.
