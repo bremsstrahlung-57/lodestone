@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     gemini_api_key: str | None = None
     groq_api_key: str | None = None
-    openai_model = "gpt-5.1-chat-latest"
-    anthropic_model = "claude-haiku-4-5-20251001"
+    openai_model: str = "gpt-5.1-chat-latest"
+    anthropic_model: str = "claude-haiku-4-5-20251001"
     gemini_model: str = "gemini-2.5-flash"
     groq_model: str = "llama-3.3-70b-versatile"
 
