@@ -4,9 +4,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 
-from anthropic import Anthropic
 from anthropic import APIConnectionError as AnthropicConnectionError
 from anthropic import APIStatusError as AnthropicStatusError
+from anthropic import AsyncAnthropic
 from anthropic import RateLimitError as AnthropicRateLimitError
 from anthropic.types import TextBlock
 from google import genai
@@ -14,12 +14,12 @@ from google.genai import types
 from google.genai.errors import ClientError as GoogleClientError
 from groq import APIConnectionError as GroqConnectionError
 from groq import APIError as GroqAPIError
+from groq import AsyncGroq
 from groq import AuthenticationError as GroqAuthenticationError
-from groq import Groq
 from groq import RateLimitError as GroqRateLimitError
 from openai import APIConnectionError as OpenAIConnectionError
 from openai import APIStatusError as OpenAIStatusError
-from openai import OpenAI
+from openai import AsyncOpenAI
 from openai import RateLimitError as OpenAIRateLimitError
 
 logger = logging.getLogger(__name__)
@@ -52,22 +52,6 @@ class LLMProvider(str, Enum):
     groq = "groq"
     openai = "openai"
     anthropic = "anthropic"
-
-
-def create_gemini_client(api_key: str):
-    return genai.Client(api_key=api_key)
-
-
-def create_groq_client(api_key: str):
-    return Groq(api_key=api_key)
-
-
-def create_openai_client(api_key: str):
-    return OpenAI(api_key=api_key)
-
-
-def create_anthropic_client(api_key: str):
-    return Anthropic(api_key=api_key)
 
 
 def query_rewriting_prompt(query):
@@ -118,22 +102,22 @@ class LLMResponse:
 
 class BaseLLM(ABC):
     @abstractmethod
-    def generate(self, prompt: str) -> LLMResponse:
+    async def generate(self, prompt: str) -> LLMResponse:
         pass
 
     @abstractmethod
-    def query_rewrite(self, query: str) -> str:
+    async def query_rewrite(self, query: str) -> str:
         pass
 
 
 class GeminiLLM(BaseLLM):
     def __init__(self, api_key: str, model: str):
-        self.client = create_gemini_client(api_key)
+        self.client = genai.Client(api_key=api_key)
         self.apiprovider = "gemini"
         self.model = model
         logger.info(f"{self.apiprovider} client initialized", extra={"model": model})
 
-    def generate(self, prompt: str) -> LLMResponse:
+    async def generate(self, prompt: str) -> LLMResponse:
         logger.debug(
             f"{self.apiprovider} generate called",
             extra={"model": self.model, "prompt_len": len(prompt)},
@@ -141,7 +125,7 @@ class GeminiLLM(BaseLLM):
 
         start = time.perf_counter()
         try:
-            response = self.client.models.generate_content(
+            response = await self.client.aio.models.generate_content(
                 model=self.model,
                 contents=prompt,
                 config=types.GenerateContentConfig(
@@ -221,7 +205,7 @@ class GeminiLLM(BaseLLM):
                 status="UNKNOWN_ERROR",
             )
 
-    def query_rewrite(self, query: str):
+    async def query_rewrite(self, query: str):
         prompt = query_rewriting_prompt(query)
 
         logger.debug(
@@ -229,7 +213,7 @@ class GeminiLLM(BaseLLM):
             extra={"user_query": query, "model": self.model, "prompt_len": len(prompt)},
         )
         try:
-            response = self.client.models.generate_content(
+            response = await self.client.aio.models.generate_content(
                 model=self.model,
                 contents=prompt,
             )
@@ -238,7 +222,7 @@ class GeminiLLM(BaseLLM):
                 f"{self.apiprovider} query rewriting succeeded",
                 extra={"rewritten_query": response.text},
             )
-            return response.text if not None else query
+            return response.text if response.text else query
 
         except Exception as e:
             logger.error(
@@ -250,12 +234,12 @@ class GeminiLLM(BaseLLM):
 
 class GroqLLM(BaseLLM):
     def __init__(self, api_key: str, model: str):
-        self.client = create_groq_client(api_key)
+        self.client = AsyncGroq(api_key=api_key)
         self.model = model
         self.apiprovider = "groq"
         logger.info(f"{self.apiprovider} client initialized", extra={"model": model})
 
-    def generate(self, prompt: str) -> LLMResponse:
+    async def generate(self, prompt: str) -> LLMResponse:
         logger.debug(
             f"{self.apiprovider} generate called",
             extra={"model": self.model, "prompt_len": len(prompt)},
@@ -263,7 +247,7 @@ class GroqLLM(BaseLLM):
 
         start = time.perf_counter()
         try:
-            response = self.client.chat.completions.create(
+            response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
@@ -410,7 +394,7 @@ class GroqLLM(BaseLLM):
                 status="UNKNOWN_ERROR",
             )
 
-    def query_rewrite(self, query: str):
+    async def query_rewrite(self, query: str):
         prompt = query_rewriting_prompt(query)
 
         logger.debug(
@@ -418,7 +402,7 @@ class GroqLLM(BaseLLM):
             extra={"model": self.model, "prompt_len": len(prompt)},
         )
         try:
-            response = self.client.chat.completions.create(
+            response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "user", "content": prompt},
@@ -428,7 +412,12 @@ class GroqLLM(BaseLLM):
                 "groq query rewriting succeeded",
                 extra={"rewritten_query": response.choices[0].message.content},
             )
-            return response.choices[0].message.content if not None else query
+            return (
+                response.choices[0].message.content
+                if response.choices[0].message.content
+                else query
+            )
+
         except Exception as e:
             logger.error(
                 f"{self.apiprovider} query rewriting failed, returning default",
@@ -439,7 +428,7 @@ class GroqLLM(BaseLLM):
 
 class OpenAILLM(BaseLLM):
     def __init__(self, api_key: str, model: str):
-        self.client = create_openai_client(api_key)
+        self.client = AsyncOpenAI(api_key=api_key)
         self.apiprovider = "openai"
         self.model = model
         logger.info(
@@ -447,7 +436,7 @@ class OpenAILLM(BaseLLM):
             extra={"model": model},
         )
 
-    def generate(self, prompt: str) -> LLMResponse:
+    async def generate(self, prompt: str) -> LLMResponse:
         logger.debug(
             f"{self.apiprovider} generate called",
             extra={"model": self.model, "prompt_len": len(prompt)},
@@ -455,7 +444,7 @@ class OpenAILLM(BaseLLM):
 
         start = time.perf_counter()
         try:
-            response = self.client.responses.create(
+            response = await self.client.responses.create(
                 model=self.model,
                 input=[
                     {"role": "system", "content": SYSTEM_PROMPT},
@@ -578,7 +567,7 @@ class OpenAILLM(BaseLLM):
                 status="UNKNOWN_ERROR",
             )
 
-    def query_rewrite(self, query: str):
+    async def query_rewrite(self, query: str):
         prompt = query_rewriting_prompt(query)
 
         logger.debug(
@@ -586,7 +575,7 @@ class OpenAILLM(BaseLLM):
             extra={"user_query": query, "model": self.model, "prompt_len": len(prompt)},
         )
         try:
-            response = self.client.responses.create(
+            response = await self.client.responses.create(
                 model=self.model,
                 input=prompt,
             )
@@ -595,7 +584,7 @@ class OpenAILLM(BaseLLM):
                 f"{self.apiprovider} query rewriting succeeded",
                 extra={"rewritten_query": response.text},
             )
-            return response.output_text if not None else query
+            return response.output_text if response.output_text else query
 
         except Exception as e:
             logger.error(
@@ -607,12 +596,12 @@ class OpenAILLM(BaseLLM):
 
 class AnthropicLLM(BaseLLM):
     def __init__(self, api_key: str, model: str):
-        self.client = create_anthropic_client(api_key)
+        self.client = AsyncAnthropic(api_key=api_key)
         self.apiprovider = "anthropic"
         self.model = model
         logger.info(f"{self.apiprovider} client initialized", extra={"model": model})
 
-    def generate(self, prompt: str) -> LLMResponse:
+    async def generate(self, prompt: str) -> LLMResponse:
         logger.debug(
             f"{self.apiprovider} generate called",
             extra={"model": self.model, "prompt_len": len(prompt)},
@@ -620,7 +609,7 @@ class AnthropicLLM(BaseLLM):
 
         start = time.perf_counter()
         try:
-            response = self.client.messages.create(
+            response = await self.client.messages.create(
                 model=self.model,
                 max_tokens=256,
                 system=SYSTEM_PROMPT,
@@ -739,7 +728,7 @@ class AnthropicLLM(BaseLLM):
                 status="UNKNOWN_ERROR",
             )
 
-    def query_rewrite(self, query: str):
+    async def query_rewrite(self, query: str):
         prompt = query_rewriting_prompt(query)
 
         logger.debug(
@@ -747,7 +736,7 @@ class AnthropicLLM(BaseLLM):
             extra={"user_query": query, "model": self.model, "prompt_len": len(prompt)},
         )
         try:
-            response = self.client.messages.create(
+            response = await self.client.messages.create(
                 model=self.model,
                 max_tokens=256,
                 messages=[{"role": "user", "content": prompt}],

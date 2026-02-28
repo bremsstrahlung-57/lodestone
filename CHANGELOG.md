@@ -6,6 +6,71 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.7.0] - 2026-02-28
+
+### Added
+
+- Full async/await support across the entire backend (API, database, embeddings, LLM clients, retrieval, ingestion, CLI).
+- `AsyncQdrantClient` replacing the synchronous `QdrantClient` for non-blocking vector operations.
+- `aiosqlite` dependency for async SQLite access, replacing synchronous `sqlite3`.
+- Lazy async connection management for SQLite with `connect()` / `close()` lifecycle methods.
+- `Recall.create()` async classmethod factory for async-safe initialization (query rewriting, search).
+- `asyncio.to_thread` wrappers for CPU-bound sentence-transformer embedding and cross-encoder reranking.
+- `cross_encode()` async helper in `qdrant.py` for thread-offloaded cross-encoder prediction.
+- `pytest-asyncio` dependency with `asyncio_mode = "auto"` for async test execution.
+- SQLite connection startup/shutdown hooks in the FastAPI lifespan.
+- `_run()` async entry point in CLI with proper database cleanup on exit.
+
+### Changed
+
+- Converted all API endpoint handlers (`health_check`, `search_api`) to async.
+- Converted all Qdrant operations (`ping_qdrant`, `_assert_embedding_dim`, `ensure_collection_exists`, `search_docs`, `ingest_data`, `fetch_chunk_by_ids`) to async.
+- Converted `SQLiteDB` methods (`insert_doc_ib_db`, `read_from_cache`) to async with `_ensure_connected()` guard.
+- Converted `embed()` to async wrapper around `_embed_sync()` via `asyncio.to_thread`.
+- Converted all LLM provider classes (`GeminiLLM`, `GroqLLM`, `OpenAILLM`, `AnthropicLLM`) to use native async clients (`AsyncAnthropic`, `AsyncOpenAI`, `AsyncGroq`, Gemini `aio`) with async `generate()` and `query_rewrite()` methods.
+- Converted `LLMGeneration.generate()` and `LLMGeneration.rewrite_query()` to async.
+- Converted `Recall.get_results()` and `Recall.ai_result()` to async.
+- Converted `build_context()` in retrieval to async.
+- Converted ingestion functions (`ingest_file`, `ingest_text`) to async with explicit connection lifecycle.
+- Converted all CLI handlers and `RecallCLI` methods to async; CLI main uses `asyncio.run()`.
+- Converted all test functions (`test_search`, `test_recall`, `test_ndcg`, `test_prompt_injection`) to async.
+- Switched from `Recall(...)` constructor to `await Recall.create(...)` across all call sites.
+- Fixed query rewrite null-check expressions (`if not None` → `if response.text`) in Gemini, Groq, and OpenAI clients.
+
+### Removed
+
+- Synchronous `create_gemini_client`, `create_groq_client`, `create_openai_client`, `create_anthropic_client` factory functions from LLM client module.
+- `generate_context` CLI subcommand and `generate_llm_context` method (redundant with `build_llm_context`).
+
+---
+
+## [0.6.4] - 2026-02-23
+
+### Added
+
+- OpenAI and Anthropic as LLM providers for AI response generation and query rewriting, alongside existing Gemini and Groq support.
+- `OpenAILLM` and `AnthropicLLM` client classes with `generate()` and `query_rewrite()` methods.
+- Structured error handling for all LLM providers; AI responses now include `error_code`, `error`, and `status` fields on failure.
+- `anthropic` and `openai` Python dependencies.
+- Full CLI tool (`app/scripts/cli.py`) using `argparse` with subcommands: `ingest`, `search`, `context`, `prompt`, `generate`, `recall`.
+- OpenAI and Anthropic API key and model settings in `.env.example` and `Settings`.
+
+### Changed
+
+- Renamed `app/debug/` to `app/scripts/`; refactored `cli.py` from ad-hoc debug script into a structured CLI tool.
+- LLM `generate()` methods now return `LLMResponse` directly with error fields instead of raising on failure.
+- `docs_recall` `ai_result()` now propagates LLM error data (`error_code`, `error`, `status`) into the `ai_response` result.
+- Improved system prompt with explicit start/end markers and stronger anti-injection rules.
+- Bumped version from 0.5.4 to 0.6.4.
+- Updated README, TESTING docs, and `.env.example`.
+
+### Removed
+
+- `app/debug/cli.py` (replaced by `app/scripts/cli.py`).
+- `parse_response()` abstract method from `BaseLLM` (response parsing now handled inline in `generate()`).
+
+---
+
 ## [0.5.4] - 2026-02-19
 
 ### Added

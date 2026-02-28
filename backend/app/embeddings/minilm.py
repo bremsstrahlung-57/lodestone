@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from sentence_transformers import SentenceTransformer
@@ -5,7 +6,6 @@ from sentence_transformers import SentenceTransformer
 from app.core.constants import EMBEDDING_MODEL
 
 logger = logging.getLogger(__name__)
-
 _model: SentenceTransformer | None = None
 
 
@@ -20,8 +20,7 @@ def get_model() -> SentenceTransformer:
     return _model
 
 
-def embed(text: str) -> list[float]:
-    """Embed given str input"""
+def _embed_sync(text: str) -> list[float]:
     model = get_model()
     embedding = model.encode(text, normalize_embeddings=True, show_progress_bar=False)
     vector = embedding.tolist()
@@ -29,3 +28,8 @@ def embed(text: str) -> list[float]:
         "text embedded", extra={"text_len": len(text), "vector_dim": len(vector)}
     )
     return vector
+
+
+async def embed(text: str) -> list[float]:
+    """Embed given str input"""
+    return await asyncio.to_thread(_embed_sync, text)

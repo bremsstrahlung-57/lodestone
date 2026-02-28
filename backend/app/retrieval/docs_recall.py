@@ -27,11 +27,7 @@ class Recall:
         self.rewrite_query = rewrite_query
         self.searched_docs = None
         self.ai_mode = LLMGeneration()
-        self.new_query = (
-            self.ai_mode.rewrite_query(self.user_query, self.provider)
-            if rewrite_query and provider is not None
-            else self.user_query
-        )
+        self.new_query = query
 
         logger.info(
             "recall initialised",
@@ -66,31 +62,36 @@ class Recall:
             },
         }
 
-        _query = self.user_query
-        if self.rewrite_query:
-            _query = self.new_query
+    @classmethod
+    async def create(cls, request_id, query, limit, k, mode, provider, rewrite_query):
+        """Async factory — use instead of __init__ for heavy work."""
+        instance = cls(request_id, query, limit, k, mode, provider, rewrite_query)
+
+        if rewrite_query and provider is not None:
+            instance.new_query = await instance.ai_mode.rewrite_query(query, provider)
+
+        _query = instance.new_query if rewrite_query else query
 
         start = perf_counter()
-        self.searched_docs = search_docs(
+        instance.searched_docs = await search_docs(
             query=_query,
-            limit=self.limit,
-            k=self.k,
+            limit=instance.limit,
+            k=instance.k,
         )
-        end = perf_counter()
-        total = (end - start) * 1000
-        self.RESULT["retrieval"]["retrieval_latency_ms"] = round(total, 2)
+        total = (perf_counter() - start) * 1000
+        instance.RESULT["retrieval"]["retrieval_latency_ms"] = round(total, 2)
 
         logger.info(
             "search completed",
             extra={
-                "request_id": self.request_id,
+                "request_id": instance.request_id,
                 "query": _query,
-                "doc_count": len(self.searched_docs),
+                "doc_count": len(instance.searched_docs),
                 "retrieval_latency_ms": total,
             },
         )
 
-        for docs in self.searched_docs:
+        for docs in instance.searched_docs:
             doc_id = docs.get("doc_id", None)
             title = docs.get("title", "")
             source = docs.get("source", "")
@@ -111,7 +112,9 @@ class Recall:
                 "cross_norm": cross_norm,
                 "snippets": snippets,
             }
-            self.RESULT["retrieval"]["results"].append(res)
+            instance.RESULT["retrieval"]["results"].append(res)
+
+        return instance
 
     def retrieval_result(self):
         logger.info(
@@ -124,7 +127,7 @@ class Recall:
             },
         )
 
-    def ai_result(self):
+    async def ai_result(self):
         if self.provider is None:
             logger.warning("LLM provider not given, returning without AI answer")
             return
@@ -138,7 +141,9 @@ class Recall:
             },
         )
         prompt = prompt_generation(self.new_query, self.searched_docs)
-        llm_response = self.ai_mode.generate(provider=self.provider, prompt=prompt)
+        llm_response = await self.ai_mode.generate(
+            provider=self.provider, prompt=prompt
+        )
 
         self.RESULT["ai_response"]["ai_answer"] = llm_response.text
         self.RESULT["ai_response"]["provider"] = llm_response.provider
@@ -179,10 +184,10 @@ class Recall:
                 },
             )
 
-    def get_results(self):
+    async def get_results(self):
         self.retrieval_result()
         if self.mode == "ai":
-            self.ai_result()
+            await self.ai_result()
 
         self.RESULT["meta"]["total_latency_ms"] = (
             self.RESULT["retrieval"]["retrieval_latency_ms"]

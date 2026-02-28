@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class LLMGeneration:
-    def generate(
+    async def generate(
         self,
         provider: str,
         prompt: str,
@@ -24,10 +24,10 @@ class LLMGeneration:
             api_key=api_key,
             model=model,
         )
-        response = llm.generate(prompt)
+        response = await llm.generate(prompt)
         return response
 
-    def rewrite_query(
+    async def rewrite_query(
         self,
         query: str,
         provider: str,
@@ -44,7 +44,7 @@ class LLMGeneration:
             api_key=api_key,
             model=model,
         )
-        rewritten_query = llm.query_rewrite(query)
+        rewritten_query = await llm.query_rewrite(query)
         return rewritten_query if rewritten_query is not None else query
 
 

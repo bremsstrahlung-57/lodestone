@@ -17,7 +17,7 @@ def load_eval_json_test_cases():
 
 
 @pytest.mark.parametrize("case", load_test_cases(), ids=lambda c: c["test_id"])
-def test_recall(case):
+async def test_recall(case):
     test_id = case["test_id"]
     description = case["description"]
     input_data = case["input"]
@@ -26,7 +26,7 @@ def test_recall(case):
     print(f"\nTest: {test_id}")
     print(f"Description: {description}")
 
-    rec = Recall(
+    rec = await Recall.create(
         request_id="test_recall",
         query=input_data["query"],
         mode=input_data["mode"],
@@ -35,7 +35,7 @@ def test_recall(case):
         provider=input_data["provider"],
         rewrite_query=input_data.get("rewrite_query", False),
     )
-    result = rec.get_results()
+    result = await rec.get_results()
 
     assert result["retrieval"]["mode"] == expected["mode"], (
         f"Mode mismatch: expected {expected['mode']}, got {result['retrieval']['mode']}"
@@ -141,19 +141,20 @@ def test_recall(case):
     "mode",
     ["retrieval", "ai"],
 )
-def test_recall_returns_correct_structure(mode):
+async def test_recall_returns_correct_structure(mode):
     """Test that Recall returns the expected base structure"""
     provider = "groq" if mode == "ai" else None
 
-    rec = Recall(
+    rec = await Recall.create(
         request_id="test_recall_returns_correct_structure",
         query="test query",
         mode=mode,
         limit=3,
         k=2,
         provider=provider,
+        rewrite_query=False,
     )
-    result = rec.get_results()
+    result = await rec.get_results()
 
     assert "retrieval" in result
     assert "ai_response" in result
@@ -170,17 +171,18 @@ def test_recall_returns_correct_structure(mode):
     assert "total_latency_ms" in result["meta"]
 
 
-def test_recall_retrieval_mode_ignores_provider():
+async def test_recall_retrieval_mode_ignores_provider():
     """Test that retrieval mode works even when provider is given"""
-    rec = Recall(
+    rec = await Recall.create(
         request_id="test_recall_retrieval_mode_ignores_provider",
         query="rpg games",
         mode="retrieval",
         limit=5,
         k=3,
         provider="gemini",
+        rewrite_query=False,
     )
-    result = rec.get_results()
+    result = await rec.get_results()
 
     assert result["ai_response"]["ai_answer"] is None
     assert result["ai_response"]["provider"] is None
@@ -188,26 +190,27 @@ def test_recall_retrieval_mode_ignores_provider():
     assert "llm" not in result["ai_response"]
 
 
-def test_rewrite_query_disabled_returns_original():
+async def test_rewrite_query_disabled_returns_original():
     """When rewrite_query=False, rewritten_query should be the same as user query"""
     query = "kratos from which game"
-    rec = Recall(
+    rec = await Recall.create(
         request_id="test_rewrite_query_disabled_returns_original",
         query=query,
         mode="retrieval",
         limit=3,
         k=2,
+        provider=None,
         rewrite_query=False,
     )
-    result = rec.get_results()
+    result = await rec.get_results()
 
     assert result["retrieval"]["rewritten_query"] == query
 
 
-def test_rewrite_query_no_provider_falls_back():
+async def test_rewrite_query_no_provider_falls_back():
     """When rewrite_query=True but provider=None, should fall back to original query"""
     query = "eldenring plot pls"
-    rec = Recall(
+    rec = await Recall.create(
         request_id="test_rewrite_query_no_provider_falls_back",
         query=query,
         mode="retrieval",
@@ -216,16 +219,16 @@ def test_rewrite_query_no_provider_falls_back():
         provider=None,
         rewrite_query=True,
     )
-    result = rec.get_results()
+    result = await rec.get_results()
 
     assert result["retrieval"]["rewritten_query"] == query
 
 
 @pytest.mark.parametrize("provider", ["gemini", "groq"])
-def test_rewrite_query_produces_different_query(provider):
+async def test_rewrite_query_produces_different_query(provider):
     """When rewrite_query=True with a provider, the rewritten query should differ from the original"""
     query = "eldenring plot pls"
-    rec = Recall(
+    rec = await Recall.create(
         request_id="test_rewrite_query_produces_different_query",
         query=query,
         mode="retrieval",
@@ -234,7 +237,7 @@ def test_rewrite_query_produces_different_query(provider):
         provider=provider,
         rewrite_query=True,
     )
-    result = rec.get_results()
+    result = await rec.get_results()
 
     assert result["retrieval"]["rewritten_query"] is not None
     assert len(result["retrieval"]["rewritten_query"].strip()) > 0, (
@@ -246,10 +249,10 @@ def test_rewrite_query_produces_different_query(provider):
 
 
 @pytest.mark.parametrize("provider", ["gemini", "groq"])
-def test_rewrite_query_preserves_question_intent(provider):
+async def test_rewrite_query_preserves_question_intent(provider):
     """A question query should remain a question after rewriting, not become a label/description"""
     query = "kratos from which game"
-    rec = Recall(
+    rec = await Recall.create(
         request_id="test_rewrite_query_preserves_question_intent",
         query=query,
         mode="retrieval",
@@ -258,7 +261,7 @@ def test_rewrite_query_preserves_question_intent(provider):
         provider=provider,
         rewrite_query=True,
     )
-    result = rec.get_results()
+    result = await rec.get_results()
 
     rewritten = result["retrieval"]["rewritten_query"]
     assert rewritten is not None
@@ -272,10 +275,10 @@ def test_rewrite_query_preserves_question_intent(provider):
     )
 
 
-def test_rewrite_query_clear_query_minimal_change():
+async def test_rewrite_query_clear_query_minimal_change():
     """A query that is already clear should be returned with minimal changes"""
     query = "What is the main character in God of War?"
-    rec = Recall(
+    rec = await Recall.create(
         request_id="test_rewrite_query_clear_query_minimal_change",
         query=query,
         mode="retrieval",
@@ -284,7 +287,7 @@ def test_rewrite_query_clear_query_minimal_change():
         provider="gemini",
         rewrite_query=True,
     )
-    result = rec.get_results()
+    result = await rec.get_results()
 
     rewritten = result["retrieval"]["rewritten_query"]
     assert rewritten is not None
@@ -297,7 +300,7 @@ def test_rewrite_query_clear_query_minimal_change():
 
 
 @pytest.mark.parametrize("case", load_eval_json_test_cases())
-def test_rewrite_improvement(case):
+async def test_rewrite_improvement(case):
     """Test if rewritten query actually gives better results"""
 
     query = case["query"]
@@ -306,7 +309,7 @@ def test_rewrite_improvement(case):
     k = 3
     provider = "groq"
 
-    baseline = Recall(
+    baseline_rec = await Recall.create(
         request_id="test_rewrite_improvement_baseline",
         query=query,
         mode="retrieval",
@@ -314,9 +317,10 @@ def test_rewrite_improvement(case):
         k=k,
         provider=provider,
         rewrite_query=False,
-    ).get_results()
+    )
+    baseline = await baseline_rec.get_results()
 
-    rewritten = Recall(
+    rewritten_rec = await Recall.create(
         request_id="test_rewrite_improvement_rewritten",
         query=query,
         mode="retrieval",
@@ -324,7 +328,8 @@ def test_rewrite_improvement(case):
         k=k,
         provider=provider,
         rewrite_query=True,
-    ).get_results()
+    )
+    rewritten = await rewritten_rec.get_results()
 
     baseline_ids = {doc["doc_id"] for doc in baseline["retrieval"]["results"]}
     rewritten_ids = {doc["doc_id"] for doc in rewritten["retrieval"]["results"]}

@@ -13,14 +13,14 @@ def load_prompt_injection_test_json_cases():
 
 @pytest.mark.parametrize("case", load_prompt_injection_test_json_cases())
 @pytest.mark.parametrize("rewrite_query", [True, False])
-def test_prompt_injection(case, rewrite_query):
+async def test_prompt_injection(case, rewrite_query):
     query = case["prompt"]
     limit = 5
     k = 3
     mode = "ai"
     provider = "groq"
 
-    t = Recall(
+    t = await Recall.create(
         request_id="test_prompt_injection",
         query=query,
         limit=limit,
@@ -29,7 +29,7 @@ def test_prompt_injection(case, rewrite_query):
         provider=provider,
         rewrite_query=rewrite_query,
     )
-    r = t.get_results()
+    r = await t.get_results()
     print(f"Query: {query}")
     if rewrite_query:
         print(f"Rewritten Query:{r['retrieval']['rewritten_query']}")

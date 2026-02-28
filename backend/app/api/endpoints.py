@@ -17,7 +17,7 @@ APP_VERSION = version("recall")
 
 
 @router.get("/health")
-def health_check():
+async def health_check():
     logger.debug("health check requested")
     return {
         "status": "ok",
@@ -26,7 +26,7 @@ def health_check():
 
 
 @router.get("/search")
-def search_api(
+async def search_api(
     query: str = Query(..., min_length=3),
     k: int = Query(5, ge=1),
     limit: int = Query(50, ge=5),
@@ -34,24 +34,24 @@ def search_api(
     provider: Optional[LLMProvider] = Query(None),
     rewrite_query: bool = Query(False),
 ):
-    request_id = generate_request_id()
     start_time = time.perf_counter()
 
-    logger.info(
-        "search request received",
-        extra={
-            "request_id": request_id,
-            "query": query,
-            "mode": mode,
-            "limit": limit,
-            "k": k,
-            "provider": provider,
-            "rewrite_query": rewrite_query,
-        },
-    )
-
     try:
-        recall_init = Recall(
+        request_id = generate_request_id()
+        logger.info(
+            "search request received",
+            extra={
+                "request_id": request_id,
+                "query": query,
+                "mode": mode,
+                "limit": limit,
+                "k": k,
+                "provider": provider,
+                "rewrite_query": rewrite_query,
+            },
+        )
+
+        recall_init = await Recall.create(
             request_id=request_id,
             query=query,
             limit=limit,
@@ -61,8 +61,7 @@ def search_api(
             rewrite_query=rewrite_query,
         )
 
-        result = recall_init.get_results()
-
+        result = await recall_init.get_results()
         total_latency = (time.perf_counter() - start_time) * 1000
 
         headers = {
