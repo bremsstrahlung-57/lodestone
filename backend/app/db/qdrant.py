@@ -1,10 +1,11 @@
+import asyncio
 import logging
 import time
 import uuid
 from math import exp
 from statistics import mean
 
-from qdrant_client import QdrantClient
+from qdrant_client import AsyncQdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import Distance, PointStruct, VectorParams
@@ -18,23 +19,23 @@ from app.embeddings.minilm import embed
 
 logger = logging.getLogger(__name__)
 device = "cuda" if is_available() else "cpu"
-_client: QdrantClient | None = None
+_client: AsyncQdrantClient | None = None
 _collection_checked = False
-doc_database = SQLiteDB()
+_doc_database = SQLiteDB()
 cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2", device=device)
 
 
-def get_qdrant_client() -> QdrantClient:
+async def get_qdrant_client() -> AsyncQdrantClient:
     """Creates QDrant Client if doesn't exist and returns it"""
     global _client, _collection_checked
 
     if _client is None:
         logger.info("creating Qdrant client", extra={"url": settings.qdrant_url})
-        _client = QdrantClient(url=settings.qdrant_url)
+        _client = AsyncQdrantClient(url=settings.qdrant_url)
         logger.info("Qdrant client created")
 
     if not _collection_checked:
-        ensure_collection_exists(
+        await ensure_collection_exists(
             client=_client,
             collection_name=COLLECTION_NAME,
             vector_size=EMBEDDING_DIM,
@@ -44,20 +45,20 @@ def get_qdrant_client() -> QdrantClient:
     return _client
 
 
-def ping_qdrant() -> None:
+async def ping_qdrant() -> None:
     logger.info("pinging Qdrant")
     try:
-        get_qdrant_client()
+        await get_qdrant_client()
         logger.info("Qdrant ping successful")
     except Exception:
         logger.exception("Qdrant ping failed")
         raise
 
 
-def _assert_embedding_dim():
+async def _assert_embedding_dim():
     """Check for right dimensions"""
     logger.info("asserting embedding dimensions", extra={"expected": EMBEDDING_DIM})
-    vec = embed("dim check")
+    vec = await embed("dim check")
     if len(vec) != EMBEDDING_DIM:
         logger.error(
             "embedding dim mismatch",
@@ -69,11 +70,11 @@ def _assert_embedding_dim():
     logger.info("embedding dim check passed", extra={"dim": len(vec)})
 
 
-def ensure_collection_exists(
-    client: QdrantClient, collection_name: str, vector_size: int
-) -> None:
+async def ensure_collection_exists(
+    client: AsyncQdrantClient, collection_name: str, vector_size: int
+):
     try:
-        client.get_collection(collection_name)
+        await client.get_collection(collection_name)
         logger.debug("collection already exists", extra={"collection": collection_name})
         return
     except UnexpectedResponse as e:
@@ -88,7 +89,7 @@ def ensure_collection_exists(
         "creating collection",
         extra={"collection": collection_name, "vector_size": vector_size},
     )
-    client.create_collection(
+    await client.create_collection(
         collection_name=collection_name,
         vectors_config=VectorParams(
             size=vector_size,
@@ -96,6 +97,14 @@ def ensure_collection_exists(
         ),
     )
     logger.info("collection created", extra={"collection": collection_name})
+
+
+def _cross_encode_sync(pairs):
+    return cross_encoder.predict(pairs, batch_size=32, show_progress_bar=False)
+
+
+async def cross_encode(pairs):
+    return await asyncio.to_thread(_cross_encode_sync, pairs)
 
 
 def filter_results(
@@ -151,7 +160,7 @@ def normalize_score(results, a=0.4, e=1e-8):
         item["cosine_norm"] = cosine_norm
 
 
-def search_docs(
+async def search_docs(
     query: str,
     limit: int = 50,
     k: int = 5,
@@ -163,10 +172,10 @@ def search_docs(
     """Search for a query from the Vector DB"""
     logger.info("searching docs", extra={"query": query, "limit": limit, "k": k})
 
-    client: QdrantClient = get_qdrant_client()
-    query_vector = embed(text=query)
+    client: AsyncQdrantClient = await get_qdrant_client()
+    query_vector = await embed(text=query)
 
-    search_results = client.query_points(
+    search_results = await client.query_points(
         collection_name=COLLECTION_NAME,
         query=query_vector,
         limit=limit,
@@ -221,7 +230,7 @@ def search_docs(
         extra={"unique_docs": len(doc_score_map)},
     )
 
-    doc_db = doc_database.read_from_cache()
+    doc_db = await _doc_database.read_from_cache()
     results = []
 
     for row in doc_db:
@@ -271,9 +280,7 @@ def search_docs(
         title = item["title"]
         text = item["content"]
         pairs.append([query, f"{title}-{text}"])
-    cross_encoder_scores = cross_encoder.predict(
-        pairs, batch_size=32, show_progress_bar=False
-    )
+    cross_encoder_scores = await cross_encode(pairs)
 
     for i, item in enumerate(results):
         item["cross_encoder_score"] = cross_encoder_scores[i]
@@ -299,27 +306,27 @@ def search_docs(
             "after_filtering": len(final_results),
         },
     )
-
     return final_results
 
 
-def ingest_data(docs):
+async def ingest_data(docs):
     """Upsert data in Vector DB"""
     logger.info("ingesting data into Qdrant", extra={"doc_count": len(docs)})
     start_time = time.perf_counter()
 
-    client: QdrantClient = get_qdrant_client()
+    client: AsyncQdrantClient = await get_qdrant_client()
     points = []
     for doc in docs:
         text = doc["text"]
         doc_id = doc["doc_id"]
         chunk_id = doc["chunk_id"]
         point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{doc_id}_{chunk_id}"))
+        vector = await embed(text)
 
         points.append(
             PointStruct(
                 id=point_id,
-                vector=embed(text),
+                vector=vector,
                 payload={
                     "text": text,
                     "source": "debug",
@@ -329,7 +336,7 @@ def ingest_data(docs):
             )
         )
 
-    client.upsert(
+    await client.upsert(
         collection_name=COLLECTION_NAME,
         points=points,
     )
@@ -346,19 +353,19 @@ def ingest_data(docs):
         },
     )
 
-    return client.get_collection(COLLECTION_NAME)
+    return await client.get_collection(COLLECTION_NAME)
 
 
-def fetch_chunk_by_ids(doc_id, chunk_ids):
+async def fetch_chunk_by_ids(doc_id, chunk_ids):
     logger.debug(
         "fetching chunks by ids",
         extra={"doc_id": doc_id, "chunk_ids": chunk_ids},
     )
     st = time.perf_counter()
 
-    client = get_qdrant_client()
+    client = await get_qdrant_client()
 
-    result = client.scroll(
+    result = await client.scroll(
         collection_name=COLLECTION_NAME,
         scroll_filter=models.Filter(
             must=[

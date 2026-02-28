@@ -14,8 +14,8 @@ def load_ndcg_test_cases():
 
 
 @pytest.mark.parametrize("a", [i / 10.0 for i in range(0, 11)])
-def test_ndcg(a):
-    ndcg_list = ndcg(a)
+async def test_ndcg(a):
+    ndcg_list = await ndcg(a)
     mean_ndcg = mean(ndcg_list)
     median_ndcg = median(ndcg_list)
     worst_ndcg = min(ndcg_list)
@@ -30,7 +30,7 @@ def test_ndcg(a):
     assert worst_ndcg > 0.3
 
 
-def ndcg(a):
+async def ndcg(a):
     ndcg_l = []
     for case in load_ndcg_test_cases():
         query = case["query"]
@@ -38,7 +38,7 @@ def ndcg(a):
         limit = 50
         k = 10
 
-        results = search_docs(query=query, limit=limit, k=k, a=a)
+        results = await search_docs(query=query, limit=limit, k=k, a=a)
         doc_ids = [item["doc_id"] for item in results]
         rankings = [item["rank"] for item in results]
 

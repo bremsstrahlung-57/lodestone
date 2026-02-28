@@ -14,6 +14,8 @@ This dataset is intentionally version-controlled to ensure reproducible results 
 
 ### Test Architecture
 
+All tests are **async** and run under `pytest-asyncio` with `asyncio_mode = "auto"` (configured in `pyproject.toml`). No manual `@pytest.mark.asyncio` decorators are needed.
+
 During test execution:
 
 - A fresh Qdrant test collection is created.
@@ -59,7 +61,7 @@ The prompt injection tests require interactive input and should be run separatel
 pytest app/tests/test_prompt_injection.py -v -s
 ```
 
-> **Note:** Qdrant must be running locally on port 6333 before executing any tests. AI-mode and query-rewriting tests also require valid API keys in your `.env`. Check your rate limits for your API before running tests that calls them frequently.
+> **Note:** Qdrant must be running locally on port 6333 before executing any tests. AI-mode and query-rewriting tests also require valid API keys in your `.env`. Check your rate limits for your API before running tests that calls them frequently. All test functions are async — `pytest-asyncio` handles event-loop creation automatically.
 
 ### Writing New Tests
 

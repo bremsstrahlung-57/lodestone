@@ -2,6 +2,8 @@
 
 Contributions are welcome! Whether it's bug fixes, new features, documentation improvements, or test coverage — all help is appreciated.
 
+> **Note:** The backend is fully async — all database access, embedding, LLM calls, and retrieval use `async`/`await`. New code should follow the same pattern.
+
 ### Getting Started
 
 1. Fork the repository and clone your fork locally.
@@ -22,4 +24,6 @@ Contributions are welcome! Whether it's bug fixes, new features, documentation i
 - Create a feature branch from `master`.
 - Keep commits focused — one logical change per commit.
 - Follow the existing code style. The project uses **Ruff** for linting and **Pyright** for type checking.
+- All backend code is **async**. Use `async def` for any function that touches the database, Qdrant, embeddings, or LLM clients. For CPU-bound work (e.g. sentence-transformer encoding, cross-encoder), wrap with `asyncio.to_thread`.
+- Tests use `pytest-asyncio` with `asyncio_mode = "auto"` — write test functions as `async def` and they will be picked up automatically (no `@pytest.mark.asyncio` needed).
 - If you add a new feature, add corresponding tests under `app/tests/`.

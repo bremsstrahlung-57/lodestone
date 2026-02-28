@@ -12,26 +12,33 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.endpoints import router
-from app.db.qdrant import _assert_embedding_dim, ping_qdrant
+from app.db.qdrant import _assert_embedding_dim, _doc_database, ping_qdrant
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("application startup begun")
     try:
-        ping_qdrant()
+        await _doc_database.connect()
+        logger.info("sqlite connection verified")
+    except Exception:
+        logger.exception("failed to connect to sqlite during startup")
+        raise
+    try:
+        await ping_qdrant()
         logger.info("qdrant connection verified")
     except Exception:
         logger.exception("failed to connect to qdrant during startup")
         raise
     try:
-        _assert_embedding_dim()
+        await _assert_embedding_dim()
         logger.info("embedding dimension check passed")
     except Exception:
         logger.exception("embedding dimension assertion failed during startup")
         raise
     logger.info("application startup complete")
     yield
+    await _doc_database.close()
     logger.info("application shutdown")
 
 

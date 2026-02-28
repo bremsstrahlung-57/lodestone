@@ -8,9 +8,16 @@ It is designed to replace manual searching across folders, notes apps, and websi
 
 ---
 
-## **Current Version (v0.6.4)**
+## **Current Version (v0.7.0)**
 ### What it does
 
+- **Fully async backend** — end-to-end async across the API, database, embeddings, LLM clients, and retrieval pipeline
+- **Async Qdrant client** — switched from `QdrantClient` to `AsyncQdrantClient` for non-blocking vector operations
+- **Async SQLite via aiosqlite** — lazy-connected `aiosqlite` replaces the synchronous `sqlite3` driver with proper lifecycle management
+- **Async LLM providers** — all four providers (Anthropic, OpenAI, Gemini, Groq) now use their native async clients (`AsyncAnthropic`, `AsyncOpenAI`, `AsyncGroq`, Gemini `aio`)
+- **Thread-offloaded embeddings & cross-encoder** — CPU-bound sentence-transformer encoding and cross-encoder reranking run in `asyncio.to_thread` to avoid blocking the event loop
+- **Async factory for Recall** — `Recall.create()` async classmethod replaces heavy work in `__init__`, keeping construction clean
+- **Async test suite** — all tests converted to async with `pytest-asyncio` (`asyncio_mode = "auto"`)
 - **Semantic search** over your own documents using sentence embeddings (MiniLM-L6-v2)
 - **Two search modes** — plain retrieval or AI-answered with context from your docs
 - **Multiple LLM providers** — Anthropic, OpenAI, Gemini and Groq, switchable per request
@@ -19,7 +26,7 @@ It is designed to replace manual searching across folders, notes apps, and websi
 - **Score-based filtering** — results are ranked and filtered so you don't get garbage matches back
 - **Document ingestion** — ingest files or raw text, automatically chunked, embedded, and stored
 - **Qdrant vector DB** — all embeddings stored in Qdrant, runs locally via Docker
-- **SQLite metadata store** — full document content and metadata cached locally
+- **SQLite metadata store** — full document content and metadata cached locally via aiosqlite
 - **Content-addressed doc IDs** — SHA3-256 hashing, same content = same ID, no duplicates
 - **Structured logging** — rotating file logs across all layers (API, DB, LLM, ingestion, retrieval)
 - **FastAPI backend** — single `/api/search` endpoint handles both retrieval and AI modes

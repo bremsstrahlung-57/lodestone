@@ -32,12 +32,12 @@ def get_evidence_chunks(all_chunks):
     )
 
 
-def build_context(doc_id, evidence, total_chunks):
+async def build_context(doc_id, evidence, total_chunks):
     hit_ids = [e["chunk_id"] for e in evidence]
     window_ids = expand_chunk_ids(hit_ids, total_chunks)
     window_ids = list(set(window_ids))
 
-    points = fetch_chunk_by_ids(doc_id, window_ids)
+    points = await fetch_chunk_by_ids(doc_id, window_ids)
     points.sort(key=lambda p: p.payload["chunk_id"])
     context_list = set()
     for p in points:

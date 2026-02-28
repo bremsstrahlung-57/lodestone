@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import json
 import sys
 
@@ -11,7 +12,7 @@ from app.retrieval.docs_recall import Recall
 from app.retrieval.retrieve import llm_context_builder
 
 
-def ingest_sample_files(args):
+async def ingest_sample_files(args):
     paths = [
         "app/scripts/samples/eldenring.txt",
         "app/scripts/samples/recipe.txt",
@@ -33,7 +34,7 @@ def ingest_sample_files(args):
     ]
 
     for path in tqdm(paths, desc="Ingesting files", total=len(paths)):
-        ingest_file(path)
+        await ingest_file(path)
 
 
 class RecallCLI:
@@ -47,8 +48,8 @@ class RecallCLI:
         self.provider = provider
         self.rewrite_query = rewrite_query
 
-    def search_docs(self):
-        results = search_docs(query=self.query, limit=self.limit, k=self.k)
+    async def search_docs(self):
+        results = await search_docs(query=self.query, limit=self.limit, k=self.k)
 
         if results == []:
             print("Couldn't find any matching data related to your query :(")
@@ -89,26 +90,21 @@ class RecallCLI:
                 f"all_scores: {all_scores}\n"
             )
 
-    def build_llm_context(self):
-        result = search_docs(self.query, self.limit)
+    async def build_llm_context(self):
+        result = await search_docs(self.query, self.limit)
         return llm_context_builder(self.query, result)
 
-    def generate_llm_context(self):
-        searched_docs = search_docs(self.query, self.limit, self.k)
-        generated_context = llm_context_builder(self.query, searched_docs)
-        return generated_context
-
-    def generate_prompt(self):
-        searched_docs = search_docs(self.query, self.limit, self.k)
+    async def generate_prompt(self):
+        searched_docs = await search_docs(self.query, self.limit, self.k)
         return prompt_generation(self.query, searched_docs)
 
-    def generate_llm_response(self):
+    async def generate_llm_response(self):
         llm_gen = LLMGeneration()
-        prompt = self.generate_prompt()
-        return llm_gen.generate(self.provider, prompt)
+        prompt = await self.generate_prompt()
+        return await llm_gen.generate(self.provider, prompt)
 
-    def run_recall(self):
-        rec = Recall(
+    async def run_recall(self):
+        rec = await Recall.create(
             request_id="cli_recall",
             query=self.query,
             limit=self.limit,
@@ -117,7 +113,7 @@ class RecallCLI:
             provider=self.provider,
             rewrite_query=self.rewrite_query,
         )
-        res = json.dumps(rec.get_results(), indent=4)
+        res = json.dumps(await rec.get_results(), indent=4)
         return res
 
 
@@ -133,47 +129,41 @@ def _build_cli_instance(args):
     )
 
 
-def handle_ingest(args):
-    ingest_sample_files(args)
+async def handle_ingest(args):
+    await ingest_sample_files(args)
 
 
-def handle_search(args):
+async def handle_search(args):
     cli = _build_cli_instance(args)
     print(f"\nQuery: {args.query}")
-    cli.search_docs()
+    await cli.search_docs()
 
 
-def handle_context(args):
+async def handle_context(args):
     cli = _build_cli_instance(args)
     print(f"\nQuery: {args.query}")
-    print(cli.build_llm_context())
+    print(await cli.build_llm_context())
 
 
-def handle_generate_context(args):
+async def handle_prompt(args):
     cli = _build_cli_instance(args)
     print(f"\nQuery: {args.query}")
-    print(cli.generate_llm_context())
+    print(await cli.generate_prompt())
 
 
-def handle_prompt(args):
-    cli = _build_cli_instance(args)
-    print(f"\nQuery: {args.query}")
-    print(cli.generate_prompt())
-
-
-def handle_generate(args):
+async def handle_generate(args):
     if not args.provider:
         print("Error: --provider is required for the 'generate' command.")
         sys.exit(1)
     cli = _build_cli_instance(args)
     print(f"\nQuery: {args.query}")
-    print(cli.generate_llm_response())
+    print(await cli.generate_llm_response())
 
 
-def handle_recall(args):
+async def handle_recall(args):
     cli = _build_cli_instance(args)
     print(f"\nQuery: {args.query}")
-    print(cli.run_recall())
+    print(await cli.run_recall())
 
 
 def add_common_args(parser):
@@ -209,6 +199,15 @@ def add_common_args(parser):
     )
 
 
+async def _run(args):
+    try:
+        await args.func(args)
+    finally:
+        from app.db.qdrant import _doc_database
+
+        await _doc_database.close()
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="recall-cli",
@@ -238,13 +237,6 @@ def main():
     add_common_args(context_parser)
     context_parser.set_defaults(func=handle_context)
 
-    # --- generate-context ---
-    gen_ctx_parser = subparsers.add_parser(
-        "generate-context", help="Generate full LLM context with k chunks"
-    )
-    add_common_args(gen_ctx_parser)
-    gen_ctx_parser.set_defaults(func=handle_generate_context)
-
     # --- prompt ---
     prompt_parser = subparsers.add_parser(
         "prompt", help="Generate and display the prompt sent to the LLM"
@@ -267,7 +259,7 @@ def main():
     recall_parser.set_defaults(func=handle_recall)
 
     args = parser.parse_args()
-    args.func(args)
+    asyncio.run(_run(args))
 
 
 if __name__ == "__main__":

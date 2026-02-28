@@ -15,8 +15,9 @@ logger = logging.getLogger(__name__)
 db_action = SQLiteDB()
 
 
-def ingest_file(path: str, source="user"):
+async def ingest_file(path: str, source="user"):
     """File ingestion for Vector DB"""
+    await db_action.connect()
     logger.info("ingesting file", extra={"path": path, "source": source})
 
     try:
@@ -43,7 +44,7 @@ def ingest_file(path: str, source="user"):
         },
     )
 
-    db_action.insert_doc_ib_db(
+    await db_action.insert_doc_ib_db(
         doc_id=doc_id,
         title=title.strip(),
         content=text,
@@ -61,15 +62,17 @@ def ingest_file(path: str, source="user"):
             }
         )
 
-    ingest_data(docs)
+    await ingest_data(docs)
     logger.info(
         "file ingestion complete",
         extra={"doc_id": doc_id, "total_chunks": total_chunks},
     )
+    await db_action.close()
 
 
-def ingest_text(text: str):
+async def ingest_text(text: str):
     """Text ingestiong for Vector DB"""
+    await db_action.connect()
     doc_id = make_doc_id(text)
     chunks = chunk_text(text)
     total_chunks = len(chunks)
@@ -93,8 +96,9 @@ def ingest_text(text: str):
             }
         )
 
-    ingest_data(docs)
+    await ingest_data(docs)
     logger.info(
         "text ingestion complete",
         extra={"doc_id": doc_id, "total_chunks": total_chunks},
     )
+    await db_action.close()

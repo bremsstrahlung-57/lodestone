@@ -11,12 +11,12 @@ def load_cases():
 
 
 @pytest.mark.parametrize("case", load_cases())
-def test_search_docs(case):
+async def test_search_docs(case):
     query = case["query"]
     expected = set(case["expected"])
     limit = 5
 
-    results = search_docs(query, limit)
+    results = await search_docs(query, limit)
     found_ids = {res["doc_id"] for res in results}
 
     print(f"\nQuery   : {query}")
