@@ -12,7 +12,6 @@ from qdrant_client.models import Distance, PointStruct, VectorParams
 from sentence_transformers import CrossEncoder
 from torch.cuda import is_available
 
-from app.core.constants import COLLECTION_NAME, EMBEDDING_DIM
 from app.core.settings import get_settings
 from app.db.sqlitedb import SQLiteDB
 from app.embeddings.minilm import embed
@@ -24,6 +23,9 @@ _collection_checked = False
 _doc_database = SQLiteDB()
 cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2", device=device)
 settings = get_settings()
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+EMBEDDING_DIM = 384
+COLLECTION_NAME = "documents"
 
 
 async def get_qdrant_client() -> AsyncQdrantClient:
