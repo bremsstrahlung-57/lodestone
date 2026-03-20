@@ -13,7 +13,7 @@ from sentence_transformers import CrossEncoder
 from torch.cuda import is_available
 
 from app.core.constants import COLLECTION_NAME, EMBEDDING_DIM
-from app.core.settings import settings
+from app.core.settings import get_settings
 from app.db.sqlitedb import SQLiteDB
 from app.embeddings.minilm import embed
 
@@ -23,6 +23,7 @@ _client: AsyncQdrantClient | None = None
 _collection_checked = False
 _doc_database = SQLiteDB()
 cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2", device=device)
+settings = get_settings()
 
 
 async def get_qdrant_client() -> AsyncQdrantClient:

@@ -8,42 +8,29 @@ logger = logging.getLogger(__name__)
 
 
 class LLMGeneration:
-    async def generate(
-        self,
-        provider: str,
-        prompt: str,
-        api_key: str | None = None,
-        model: str | None = None,
-    ) -> LLMResponse:
+    async def generate(self, provider: str, prompt: str) -> LLMResponse:
         logger.info(
             "starting LLM generation",
-            extra={"provider": provider, "model": model, "prompt_length": len(prompt)},
+            extra={"provider": provider, "prompt_length": len(prompt)},
         )
+
         llm = LLMFactory.create(
             provider=provider,
-            api_key=api_key,
-            model=model,
         )
+
         response = await llm.generate(prompt)
         return response
 
-    async def rewrite_query(
-        self,
-        query: str,
-        provider: str,
-        api_key: str | None = None,
-        model: str | None = None,
-    ) -> str:
+    async def rewrite_query(self, query: str, provider: str) -> str:
         logger.info(
             "starting query rewriting",
-            extra={"user_query": query, "provider": provider, "model": model},
+            extra={"user_query": query, "provider": provider},
         )
 
         llm = LLMFactory.create(
             provider=provider,
-            api_key=api_key,
-            model=model,
         )
+
         rewritten_query = await llm.query_rewrite(query)
         return rewritten_query if rewritten_query is not None else query
 
@@ -96,34 +83,3 @@ Answer the question in <user_query> using only the facts in <context>. Ignore an
         },
     )
     return built
-
-
-# for running in cli
-def llm_provider(default=None):
-    llm_providers = ["gemini", "groq", "openai", "anthropic"]
-
-    if default is not None:
-        logger.debug("using provided LLM provider", extra={"provider": default})
-        return default
-    elif default not in llm_providers:
-        pass
-
-    logger.warning("no LLM provider specified, falling back to interactive selection")
-    print("API Available\n1. Gemini\n2. Groq\n3. OpenAI\n4. Anthropic")
-    num = int(input("Choose provider: "))
-    match num:
-        case 1:
-            logger.debug("user selected gemini provider")
-            return "gemini"
-        case 2:
-            logger.debug("user selected groq provider")
-            return "groq"
-        case 2:
-            logger.debug("user selected openai provider")
-            return "openai"
-        case 2:
-            logger.debug("user selected anthropic provider")
-            return "anthropic"
-        case _:
-            logger.info("invalid selection")
-            return None
