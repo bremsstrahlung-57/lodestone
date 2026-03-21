@@ -2,7 +2,7 @@
 
 ### Overview
 
-Recall includes a deterministic test suite that validates retrieval quality, ranking logic, recall metrics, NDCG scoring, and prompt-injection handling.
+Lodestone includes a deterministic test suite that validates retrieval quality, ranking logic, lodestone metrics, NDCG scoring, and prompt-injection handling.
 
 All tests run against a fixed, canonical sample corpus located at:
 
@@ -28,14 +28,14 @@ During test execution:
 | Module | What it covers |
 |---|---|
 | `test_search.py` | Validates that semantic search returns expected documents for each query in `eval.json` |
-| `test_recall.py` | End-to-end recall pipeline — response structure, retrieval/AI modes, query rewriting behaviour, and rewrite improvement over baseline |
+| `test_lodestone.py` | End-to-end lodestone pipeline — response structure, retrieval/AI modes, query rewriting behaviour, and rewrite improvement over baseline |
 | `test_ndcg.py` | Parametrised NDCG scoring across alpha values (0.0–1.0), asserts mean > 0.75, median > 0.80, worst > 0.3 |
 | `test_prompt_injection.py` | Interactive prompt-injection resilience checks (requires manual pass/fail input) |
 
 Test cases are defined in JSON files under `app/tests/test_cases/`:
 
 - `eval.json` — query-to-expected-document mappings for search and rewrite tests
-- `recall_test.json` — full recall pipeline test case definitions
+- `lodestone_test.json` — full lodestone pipeline test case definitions
 - `ndcg.json` — queries with relevance-graded document mappings for NDCG evaluation
 - `prompt_injection_test.json` — adversarial prompt injection payloads
 
@@ -51,7 +51,7 @@ Run a specific test module:
 
 ```
 pytest app/tests/test_search.py -v
-pytest app/tests/test_recall.py -v
+pytest app/tests/test_lodestone.py -v
 pytest app/tests/test_ndcg.py -v
 ```
 

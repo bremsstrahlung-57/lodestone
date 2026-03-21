@@ -1,12 +1,11 @@
 import json
 
 import pytest
-
-from app.retrieval.docs_recall import Recall
+from app.retrieval.docs_lodestone import Lodestone
 
 
 def load_test_cases():
-    with open("app/tests/test_cases/recall_test.json", "r") as f:
+    with open("app/tests/test_cases/lodestone_test.json", "r") as f:
         data = json.load(f)
         return data["test_cases"]
 
@@ -17,7 +16,7 @@ def load_eval_json_test_cases():
 
 
 @pytest.mark.parametrize("case", load_test_cases(), ids=lambda c: c["test_id"])
-async def test_recall(case):
+async def test_lodestone(case):
     test_id = case["test_id"]
     description = case["description"]
     input_data = case["input"]
@@ -26,8 +25,8 @@ async def test_recall(case):
     print(f"\nTest: {test_id}")
     print(f"Description: {description}")
 
-    rec = await Recall.create(
-        request_id="test_recall",
+    rec = await Lodestone.create(
+        request_id="test_lodestone",
         query=input_data["query"],
         mode=input_data["mode"],
         limit=input_data["limit"],
@@ -141,12 +140,12 @@ async def test_recall(case):
     "mode",
     ["retrieval", "ai"],
 )
-async def test_recall_returns_correct_structure(mode):
-    """Test that Recall returns the expected base structure"""
+async def test_lodestone_returns_correct_structure(mode):
+    """Test that Lodestone returns the expected base structure"""
     provider = "groq" if mode == "ai" else None
 
-    rec = await Recall.create(
-        request_id="test_recall_returns_correct_structure",
+    rec = await Lodestone.create(
+        request_id="test_lodestone_returns_correct_structure",
         query="test query",
         mode=mode,
         limit=3,
@@ -171,10 +170,10 @@ async def test_recall_returns_correct_structure(mode):
     assert "total_latency_ms" in result["meta"]
 
 
-async def test_recall_retrieval_mode_ignores_provider():
+async def test_lodestone_retrieval_mode_ignores_provider():
     """Test that retrieval mode works even when provider is given"""
-    rec = await Recall.create(
-        request_id="test_recall_retrieval_mode_ignores_provider",
+    rec = await Lodestone.create(
+        request_id="test_lodestone_retrieval_mode_ignores_provider",
         query="rpg games",
         mode="retrieval",
         limit=5,
@@ -193,7 +192,7 @@ async def test_recall_retrieval_mode_ignores_provider():
 async def test_rewrite_query_disabled_returns_original():
     """When rewrite_query=False, rewritten_query should be the same as user query"""
     query = "kratos from which game"
-    rec = await Recall.create(
+    rec = await Lodestone.create(
         request_id="test_rewrite_query_disabled_returns_original",
         query=query,
         mode="retrieval",
@@ -210,7 +209,7 @@ async def test_rewrite_query_disabled_returns_original():
 async def test_rewrite_query_no_provider_falls_back():
     """When rewrite_query=True but provider=None, should fall back to original query"""
     query = "eldenring plot pls"
-    rec = await Recall.create(
+    rec = await Lodestone.create(
         request_id="test_rewrite_query_no_provider_falls_back",
         query=query,
         mode="retrieval",
@@ -228,7 +227,7 @@ async def test_rewrite_query_no_provider_falls_back():
 async def test_rewrite_query_produces_different_query(provider):
     """When rewrite_query=True with a provider, the rewritten query should differ from the original"""
     query = "eldenring plot pls"
-    rec = await Recall.create(
+    rec = await Lodestone.create(
         request_id="test_rewrite_query_produces_different_query",
         query=query,
         mode="retrieval",
@@ -252,7 +251,7 @@ async def test_rewrite_query_produces_different_query(provider):
 async def test_rewrite_query_preserves_question_intent(provider):
     """A question query should remain a question after rewriting, not become a label/description"""
     query = "kratos from which game"
-    rec = await Recall.create(
+    rec = await Lodestone.create(
         request_id="test_rewrite_query_preserves_question_intent",
         query=query,
         mode="retrieval",
@@ -278,7 +277,7 @@ async def test_rewrite_query_preserves_question_intent(provider):
 async def test_rewrite_query_clear_query_minimal_change():
     """A query that is already clear should be returned with minimal changes"""
     query = "What is the main character in God of War?"
-    rec = await Recall.create(
+    rec = await Lodestone.create(
         request_id="test_rewrite_query_clear_query_minimal_change",
         query=query,
         mode="retrieval",
@@ -309,7 +308,7 @@ async def test_rewrite_improvement(case):
     k = 3
     provider = "groq"
 
-    baseline_rec = await Recall.create(
+    baseline_rec = await Lodestone.create(
         request_id="test_rewrite_improvement_baseline",
         query=query,
         mode="retrieval",
@@ -320,7 +319,7 @@ async def test_rewrite_improvement(case):
     )
     baseline = await baseline_rec.get_results()
 
-    rewritten_rec = await Recall.create(
+    rewritten_rec = await Lodestone.create(
         request_id="test_rewrite_improvement_rewritten",
         query=query,
         mode="retrieval",

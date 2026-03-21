@@ -23,7 +23,6 @@ _collection_checked = False
 _doc_database = SQLiteDB()
 cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2", device=device)
 settings = get_settings()
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 EMBEDDING_DIM = 384
 COLLECTION_NAME = "documents"
 

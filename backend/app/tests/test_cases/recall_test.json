@@ -290,9 +290,9 @@
         }
     ],
     "metadata": {
-        "function": "Recall",
-        "module": "app.retrieval.docs_recall",
-        "description": "Test cases for the Recall function which performs document retrieval and optional AI-powered answer generation",
+        "function": "Lodestone",
+        "module": "app.retrieval.docs_lodestone",
+        "description": "Test cases for the Lodestone function which performs document retrieval and optional AI-powered answer generation",
         "modes": {
             "retrieval": "Returns search results without AI processing",
             "ai": "Returns search results with AI-generated answer from specified provider"

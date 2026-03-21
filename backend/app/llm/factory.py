@@ -10,10 +10,10 @@ from app.llm.client import (
 )
 
 settings = get_settings()
-DEFAULT_OPENAI_API_KEY = settings.openai_api_key
-DEFAULT_ANTHROPIC_API_KEY = settings.anthropic_api_key
-DEFAULT_GEMINI_API_KEY = settings.gemini_api_key
-DEFAULT_GROQ_API_KEY = settings.groq_api_key
+DEFAULT_OPENAI_API_KEY = settings.openai_api_key.get_secret_value()
+DEFAULT_ANTHROPIC_API_KEY = settings.anthropic_api_key.get_secret_value()
+DEFAULT_GEMINI_API_KEY = settings.gemini_api_key.get_secret_value()
+DEFAULT_GROQ_API_KEY = settings.groq_api_key.get_secret_value()
 
 DEFAULT_OPENAI_MODEL = settings.openai_model
 DEFAULT_ANTHROPIC_MODEL = settings.anthropic_model
