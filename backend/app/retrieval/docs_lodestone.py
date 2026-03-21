@@ -7,7 +7,7 @@ from app.llm.generation import LLMGeneration, prompt_generation
 logger = logging.getLogger(__name__)
 
 
-class Recall:
+class Lodestone:
     def __init__(
         self,
         request_id: str,
@@ -30,7 +30,7 @@ class Recall:
         self.new_query = query
 
         logger.info(
-            "recall initialised",
+            "lodestone initialised",
             extra={
                 "request_id": self.request_id,
                 "query": query,

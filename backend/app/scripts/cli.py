@@ -7,8 +7,8 @@ from tqdm import tqdm
 
 from app.db.qdrant import search_docs
 from app.ingest.ingestion import ingest_file
-from app.llm.generation import LLMGeneration, llm_provider, prompt_generation
-from app.retrieval.docs_recall import Recall
+from app.llm.generation import LLMGeneration, prompt_generation
+from app.retrieval.docs_lodestone import Lodestone
 from app.retrieval.retrieve import llm_context_builder
 
 
@@ -37,7 +37,7 @@ async def ingest_sample_files(args):
         await ingest_file(path)
 
 
-class RecallCLI:
+class LodestoneCLI:
     def __init__(
         self, query, limit=5, k=3, mode="retrieval", provider=None, rewrite_query=False
     ):
@@ -103,9 +103,9 @@ class RecallCLI:
         prompt = await self.generate_prompt()
         return await llm_gen.generate(self.provider, prompt)
 
-    async def run_recall(self):
-        rec = await Recall.create(
-            request_id="cli_recall",
+    async def run_lodestone(self):
+        rec = await Lodestone.create(
+            request_id="cli_lodestone",
             query=self.query,
             limit=self.limit,
             k=self.k,
@@ -118,8 +118,8 @@ class RecallCLI:
 
 
 def _build_cli_instance(args):
-    provider = llm_provider(args.provider) if args.provider else None
-    return RecallCLI(
+    provider = args.provider
+    return LodestoneCLI(
         query=args.query,
         limit=args.limit,
         k=args.k,
@@ -160,10 +160,10 @@ async def handle_generate(args):
     print(await cli.generate_llm_response())
 
 
-async def handle_recall(args):
+async def handle_lodestone(args):
     cli = _build_cli_instance(args)
     print(f"\nQuery: {args.query}")
-    print(await cli.run_recall())
+    print(await cli.run_lodestone())
 
 
 def add_common_args(parser):
@@ -210,8 +210,8 @@ async def _run(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="recall-cli",
-        description="Recall CLI — inspect ingestion, search, context building, and LLM generation.",
+        prog="lodestone-cli",
+        description="Lodestone CLI — inspect ingestion, search, context building, and LLM generation.",
     )
     subparsers = parser.add_subparsers(
         dest="command", required=True, help="Available commands"
@@ -251,12 +251,12 @@ def main():
     add_common_args(generate_parser)
     generate_parser.set_defaults(func=handle_generate)
 
-    # --- recall ---
-    recall_parser = subparsers.add_parser(
-        "recall", help="Run the full Recall pipeline and display results"
+    # --- lodestone ---
+    lodestone_parser = subparsers.add_parser(
+        "lodestone", help="Run the full Lodestone pipeline and display results"
     )
-    add_common_args(recall_parser)
-    recall_parser.set_defaults(func=handle_recall)
+    add_common_args(lodestone_parser)
+    lodestone_parser.set_defaults(func=handle_lodestone)
 
     args = parser.parse_args()
     asyncio.run(_run(args))

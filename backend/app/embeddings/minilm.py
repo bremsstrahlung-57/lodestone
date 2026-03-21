@@ -3,10 +3,9 @@ import logging
 
 from sentence_transformers import SentenceTransformer
 
-from app.core.constants import EMBEDDING_MODEL
-
 logger = logging.getLogger(__name__)
 _model: SentenceTransformer | None = None
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 
 def get_model() -> SentenceTransformer:

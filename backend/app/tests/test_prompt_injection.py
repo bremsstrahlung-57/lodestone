@@ -1,8 +1,7 @@
 import json
 
 import pytest
-
-from app.retrieval.docs_recall import Recall
+from app.retrieval.docs_lodestone import Lodestone
 
 
 def load_prompt_injection_test_json_cases():
@@ -20,7 +19,7 @@ async def test_prompt_injection(case, rewrite_query):
     mode = "ai"
     provider = "groq"
 
-    t = await Recall.create(
+    t = await Lodestone.create(
         request_id="test_prompt_injection",
         query=query,
         limit=limit,

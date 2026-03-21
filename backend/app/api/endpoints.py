@@ -3,17 +3,17 @@ import time
 from importlib.metadata import version
 from typing import Literal, Optional
 
+from app.retrieval.docs_lodestone import Lodestone
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from app.ingest.doc_id import generate_request_id
 from app.llm.client import LLMProvider
-from app.retrieval.docs_recall import Recall
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-APP_VERSION = version("recall")
+APP_VERSION = version("lodestone")
 
 
 @router.get("/health")
@@ -51,7 +51,7 @@ async def search_api(
             },
         )
 
-        recall_init = await Recall.create(
+        lodestone_init = await Lodestone.create(
             request_id=request_id,
             query=query,
             limit=limit,
@@ -61,7 +61,7 @@ async def search_api(
             rewrite_query=rewrite_query,
         )
 
-        result = await recall_init.get_results()
+        result = await lodestone_init.get_results()
         total_latency = (time.perf_counter() - start_time) * 1000
 
         headers = {

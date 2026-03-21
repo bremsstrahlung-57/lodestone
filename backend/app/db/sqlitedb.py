@@ -4,7 +4,9 @@ from datetime import datetime
 
 import aiosqlite
 
-from app.core.constants import DATA_FILE_PATH, DATA_PATH
+DATA_PATH = "data/"
+DATA_FILE_PATH = "data/data.db"
+
 
 logger = logging.getLogger(__name__)
 

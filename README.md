@@ -1,8 +1,8 @@
-# Recall
+# Lodestone
 
-Recall is a local-first personal knowledge retrieval system that lets you store and search your documents semantically.
+Lodestone is a local-first personal knowledge retrieval system that lets you store and search your documents semantically.
 
-You can upload files, text, and bookmarks, and later retrieve them using natural language queries instead of filenames, folder paths, or exact keywords. Recall runs locally, keeps your data under your control, and optionally uses AI to generate answers grounded in your own documents.
+You can upload files, text, and bookmarks, and later retrieve them using natural language queries instead of filenames, folder paths, or exact keywords. Lodestone runs locally, keeps your data under your control, and optionally uses AI to generate answers grounded in your own documents.
 
 It is designed to replace manual searching across folders, notes apps, and websites with a single searchable memory.
 
@@ -16,7 +16,7 @@ It is designed to replace manual searching across folders, notes apps, and websi
 - **Async SQLite via aiosqlite** — lazy-connected `aiosqlite` replaces the synchronous `sqlite3` driver with proper lifecycle management
 - **Async LLM providers** — all four providers (Anthropic, OpenAI, Gemini, Groq) now use their native async clients (`AsyncAnthropic`, `AsyncOpenAI`, `AsyncGroq`, Gemini `aio`)
 - **Thread-offloaded embeddings & cross-encoder** — CPU-bound sentence-transformer encoding and cross-encoder reranking run in `asyncio.to_thread` to avoid blocking the event loop
-- **Async factory for Recall** — `Recall.create()` async classmethod replaces heavy work in `__init__`, keeping construction clean
+- **Async factory for Lodestone** — `Lodestone.create()` async classmethod replaces heavy work in `__init__`, keeping construction clean
 - **Async test suite** — all tests converted to async with `pytest-asyncio` (`asyncio_mode = "auto"`)
 - **Semantic search** over your own documents using sentence embeddings (MiniLM-L6-v2)
 - **Two search modes** — plain retrieval or AI-answered with context from your docs

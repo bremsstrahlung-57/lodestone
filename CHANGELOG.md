@@ -1,8 +1,29 @@
 # Changelog
 
-All notable changes to **Recall** will be documented in this file.
+All notable changes to **Lodestone** will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+---
+
+## [0.8.0] - 2026-03-21
+
+### Added
+- Updated documentation (README, TESTING) and test metadata for the new project name.
+
+### Changed
+- Renamed project and package from `recall` to `lodestone`.
+- Bumped version to `0.8.0` in `pyproject.toml` and updated `uv.lock`.
+- Renamed core retrieval module `docs_recall.py` to `docs_lodestone.py` and class to `Lodestone`.
+- Renamed CLI class and commands from `RecallCLI`/`recall` to `LodestoneCLI`/`lodestone`.
+- Updated `backend/app/api/endpoints.py` to use `Lodestone` and set `APP_VERSION` to package `lodestone`.
+- Modified API key extraction in `backend/app/llm/factory.py` to use `.get_secret_value()` on settings secrets.
+- Relocated embedding constants (`EMBEDDING_MODEL` / `EMBEDDING_DIM`) in `qdrant.py` and `minilm.py`.
+- Updated test files and references (renamed `test_recall.py` to `test_lodestone.py`).
+- Simplified `LLMFactory` and `LLMGeneration` to use global defaults, removing per-call `api_key` and `model` arguments.
+
+### Removed
+- Removed the CLI provider helper `llm_provider` from `backend/app/llm/generation.py`.
 
 ---
 
