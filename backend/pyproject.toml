@@ -1,7 +1,7 @@
 [project]
 name = "lodestone"
 version = "0.8.0"
-description = "Local-first system to store, lodestone, and semantically search personal documents"
+description = "Local-first system to store, retrieve, and semantically search personal documents"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

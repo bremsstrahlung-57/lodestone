@@ -2,7 +2,7 @@
 
 ### Overview
 
-Lodestone includes a deterministic test suite that validates retrieval quality, ranking logic, lodestone metrics, NDCG scoring, and prompt-injection handling.
+Lodestone includes a deterministic test suite that validates retrieval quality, ranking logic, retrieval metrics, NDCG scoring, and prompt-injection handling.
 
 All tests run against a fixed, canonical sample corpus located at:
 
