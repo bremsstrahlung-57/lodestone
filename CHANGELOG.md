@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Modified API key extraction in `backend/app/llm/factory.py` to use `.get_secret_value()` on settings secrets.
 - Relocated embedding constants (`EMBEDDING_MODEL` / `EMBEDDING_DIM`) in `qdrant.py` and `minilm.py`.
 - Updated test files and references (renamed `test_recall.py` to `test_lodestone.py`).
+- Simplified `LLMFactory` and `LLMGeneration` to use global defaults, removing per-call `api_key` and `model` arguments.
+
+### Removed
+- Removed the CLI provider helper `llm_provider` from `backend/app/llm/generation.py`.
 
 ---
 
