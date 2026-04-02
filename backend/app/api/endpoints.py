@@ -3,12 +3,13 @@ import time
 from importlib.metadata import version
 from typing import Literal, Optional
 
-from app.retrieval.docs_lodestone import Lodestone
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 
+from app.core.config import get_all_models, get_all_providers
 from app.ingest.doc_id import generate_request_id
 from app.llm.client import LLMProvider
+from app.retrieval.docs_lodestone import Lodestone
 
 logger = logging.getLogger(__name__)
 
@@ -93,3 +94,13 @@ async def search_api(
             },
         )
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get("/service_providers")
+async def _get_service_providers():
+    return get_all_providers()
+
+
+@router.get("/models")
+async def _get_all_models(provider: Literal["openai", "google", "groq", "anthropic"]):
+    return get_all_models(provider)
