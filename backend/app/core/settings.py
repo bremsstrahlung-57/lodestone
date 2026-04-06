@@ -3,7 +3,6 @@ from functools import lru_cache
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 class Settings(BaseSettings):
     qdrant_url: str = "http://localhost:6333"
 

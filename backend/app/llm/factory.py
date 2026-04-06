@@ -4,7 +4,7 @@ from app.core.settings import get_settings
 from app.llm.client import (
     AnthropicLLM,
     BaseLLM,
-    GeminiLLM,
+    GoogleLLM,
     GroqLLM,
     OpenAILLM,
 )
@@ -49,7 +49,7 @@ class LLMFactory:
                 "creating Gemini LLM client",
                 extra={"model": DEFAULT_GEMINI_MODEL},
             )
-            return GeminiLLM(DEFAULT_GEMINI_API_KEY, DEFAULT_GEMINI_MODEL)
+            return GoogleLLM(DEFAULT_GEMINI_API_KEY, DEFAULT_GEMINI_MODEL)
 
         if provider == "groq":
             logger.info(

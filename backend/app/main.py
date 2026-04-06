@@ -12,12 +12,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.endpoints import router
+from app.core.config import validate_config_files
 from app.db.qdrant import _assert_embedding_dim, _doc_database, ping_qdrant
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("application startup begun")
+    validate_config_files()
     try:
         await _doc_database.connect()
         logger.info("sqlite connection verified")

@@ -3,10 +3,16 @@ import time
 from importlib.metadata import version
 from typing import Literal, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import JSONResponse
 
-from app.core.config import get_all_models, get_all_providers
+from app.core.config import (
+    APIKeyRequest,
+    get_all_models,
+    get_all_providers,
+    get_defaults_from_config,
+    add_api_key,
+)
 from app.ingest.doc_id import generate_request_id
 from app.llm.client import LLMProvider
 from app.retrieval.docs_lodestone import Lodestone
@@ -90,17 +96,50 @@ async def search_api(
             extra={
                 "request_id": request_id,
                 "query": query,
-                "error": e,
+                "error": str(e),
             },
         )
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/service_providers")
 async def _get_service_providers():
-    return get_all_providers()
+    try:
+        logger.info("service_providers request received")
+        return {"status": "success", "providers": get_all_providers()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/models")
-async def _get_all_models(provider: Literal["openai", "google", "groq", "anthropic"]):
-    return get_all_models(provider)
+async def _get_all_models(provider: LLMProvider):
+    try:
+        models = get_all_models(provider)
+        if not models:
+            raise HTTPException(status_code=404, detail="No models found for provider")
+
+        return {"status": "success", "provider": provider.value, "models": models}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/defaults_config")
+async def get_defaults():
+    try:
+        return {"status": "success", "data": get_defaults_from_config()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to load defaults")
+
+
+@router.post("/add_api", status_code=status.HTTP_201_CREATED)
+async def add_modify_api_key(req: APIKeyRequest):
+    try:
+        add_api_key(req.provider, req.key)
+        return {
+            "status": "success",
+            "message": f"API key stored for {req.provider.value}",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
