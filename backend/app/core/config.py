@@ -1,10 +1,10 @@
-import toml
 from pathlib import Path
 
+import toml
 from platformdirs import user_config_dir
+from pydantic import BaseModel
 
 from app.llm.client import LLMProvider
-from pydantic import BaseModel
 
 content = """
 [groq]
@@ -177,16 +177,17 @@ def get_provider_api_key_from_keys(provider):
         create_config_keys_file()
         get_provider_api_key_from_keys(provider)
 
-# Post req
 
+# Post req
 class APIKeyRequest(BaseModel):
     provider: LLMProvider
     key: str
 
+
 def add_api_key(provider, key):
     with open(api_keys_path, "r") as f:
         config = toml.load(f)
-    
+
     config["api_keys"][provider.value] = key
 
     with open(api_keys_path, "w") as f:

@@ -189,7 +189,7 @@ def add_common_args(parser):
         "--provider",
         type=str,
         default=None,
-        help="LLM provider name (e.g. gemini, openai)",
+        help="LLM provider name (e.g. google, openai)",
     )
     parser.add_argument(
         "--rewrite-query",
