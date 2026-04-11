@@ -3,38 +3,12 @@ import asyncio
 import json
 import sys
 
-from tqdm import tqdm
 
 from app.db.qdrant import search_docs
 from app.ingest.ingestion import ingest_file
 from app.llm.generation import LLMGeneration, prompt_generation
 from app.retrieval.docs_lodestone import Lodestone
 from app.retrieval.retrieve import llm_context_builder
-
-
-async def ingest_sample_files(args):
-    paths = [
-        "app/scripts/samples/eldenring.txt",
-        "app/scripts/samples/recipe.txt",
-        "app/scripts/samples/sample.txt",
-        "app/scripts/samples/bloodborne.txt",
-        "app/scripts/samples/cp2077.txt",
-        "app/scripts/samples/doom.txt",
-        "app/scripts/samples/food.txt",
-        "app/scripts/samples/gow.txt",
-        "app/scripts/samples/history1.txt",
-        "app/scripts/samples/history2.txt",
-        "app/scripts/samples/hollow_knight.txt",
-        "app/scripts/samples/rdr2.txt",
-        "app/scripts/samples/recipe.txt",
-        "app/scripts/samples/sekiro.txt",
-        "app/scripts/samples/space.txt",
-        "app/scripts/samples/witcher3.txt",
-        "app/scripts/samples/ds3.txt",
-    ]
-
-    for path in tqdm(paths, desc="Ingesting files", total=len(paths)):
-        await ingest_file(path)
 
 
 class LodestoneCLI:
@@ -130,7 +104,7 @@ def _build_cli_instance(args):
 
 
 async def handle_ingest(args):
-    await ingest_sample_files(args)
+    await ingest_file(args.path)
 
 
 async def handle_search(args):
@@ -219,8 +193,9 @@ def main():
 
     # --- ingest ---
     ingest_parser = subparsers.add_parser(
-        "ingest", help="Ingest all sample files into the database"
+        "ingest", help="Ingest a file into the database"
     )
+    ingest_parser.add_argument("path", type=str, help="Path to the file to ingest")
     ingest_parser.set_defaults(func=handle_ingest)
 
     # --- search ---
