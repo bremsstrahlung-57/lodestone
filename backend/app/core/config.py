@@ -184,6 +184,29 @@ class APIKeyRequest(BaseModel):
     key: str
 
 
+class APIDefaultAIRequest(BaseModel):
+    provider: LLMProvider
+    model: str
+
+
+def save_default_model(provider, model):
+    with open(config_path) as f:
+        config = toml.load(f)
+
+    config["active"]["provider"] = provider.value
+
+    with open(registry_path, "r") as f:
+        check_model = toml.load(f)
+
+    if model in check_model[provider.value]["models"]:
+        config["active"]["model"] = model
+    else:
+        config["active"]["model"] = check_model[provider.value]["default"]
+
+    with open(config_path, "w") as f:
+        toml.dump(config, f)
+
+
 def add_api_key(provider, key):
     with open(api_keys_path, "r") as f:
         config = toml.load(f)

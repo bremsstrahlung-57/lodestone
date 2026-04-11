@@ -24,6 +24,7 @@ const placeholders = [
     "Search the stone.",
     "You've seen this before.",
 ];
+const API_URL = "http://localhost:8000/api/";
 
 export default function App() {
     const [health, setHealth] = useState<string>("Checking...");
@@ -31,19 +32,175 @@ export default function App() {
     const [placeholder, setPlaceholder] = useState(
         () => placeholders[Math.floor(Math.random() * placeholders.length)],
     );
-    const [theme, setTheme] = useState<"light" | "dark">(() =>
-        window.matchMedia("(prefers-color-scheme: light)").matches
-            ? "light"
-            : "dark",
+
+    const [showSettings, setShowSettings] = useState(false);
+    const [providers, setProviders] = useState<string[]>([]);
+    const [selectedProvider, setSelectedProvider] = useState("");
+    const [models, setModels] = useState<string[]>([]);
+    const [selectedModel, setSelectedModel] = useState("");
+    const [apiKeyProvider, setApiKeyProvider] = useState("");
+    const [apiKey, setApiKey] = useState("");
+    const [useAI, setUseAI] = useState(true);
+    const [rewriteQuery, setRewriteQuery] = useState(false);
+    const [results, setResults] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [expandedDocs, setExpandedDocs] = useState<Record<number, boolean>>(
+        {},
     );
+
+    const [theme, setTheme] = useState<"light" | "dark">(() => {
+        const saved = localStorage.getItem("theme");
+        if (saved === "light" || saved === "dark") return saved;
+        return window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark";
+    });
 
     useEffect(() => {
         document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
     }, [theme]);
+
+    // Fetch initial config and providers
+    useEffect(() => {
+        Promise.all([
+            fetch(API_URL + "service_providers").then((res) => res.json()),
+            fetch(API_URL + "defaults_config").then((res) => res.json()),
+        ])
+            .then(([provData, defData]) => {
+                let defaultProvider = "";
+                if (
+                    defData.status === "success" &&
+                    defData.data?.active?.provider
+                ) {
+                    defaultProvider = defData.data.active.provider;
+                }
+
+                if (provData.status === "success" && provData.providers) {
+                    setProviders(provData.providers);
+                    const p = provData.providers.includes(defaultProvider)
+                        ? defaultProvider
+                        : provData.providers.length > 0
+                          ? provData.providers[0]
+                          : "";
+
+                    if (p) {
+                        setSelectedProvider(p);
+                        setApiKeyProvider(p);
+                    }
+                }
+            })
+            .catch((err) =>
+                console.error("Failed to fetch initial data:", err),
+            );
+    }, []);
+
+    // Fetch models when provider changes
+    useEffect(() => {
+        if (!selectedProvider) return;
+        fetch(`${API_URL}models?provider=${selectedProvider}`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.status === "success" && data.models) {
+                    setModels(data.models);
+                    fetch(API_URL + "defaults_config")
+                        .then((res) => res.json())
+                        .then((defData) => {
+                            const active = defData?.data?.active;
+                            if (
+                                active?.provider === selectedProvider &&
+                                active?.model &&
+                                data.models.includes(active.model)
+                            ) {
+                                setSelectedModel(active.model);
+                            } else if (data.models.length > 0) {
+                                setSelectedModel(data.models[0]);
+                            }
+                        })
+                        .catch(() => {
+                            if (data.models.length > 0)
+                                setSelectedModel(data.models[0]);
+                        });
+                }
+            })
+            .catch((err) => {
+                console.error("Failed to fetch models:", err);
+                setModels([]);
+                setSelectedModel("");
+            });
+    }, [selectedProvider]);
+
+    const handleSaveDefaultModel = async () => {
+        if (!selectedProvider || !selectedModel) return;
+        try {
+            const res = await fetch(API_URL + "add_default_model", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    provider: selectedProvider,
+                    model: selectedModel,
+                }),
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                alert("Default model saved successfully!");
+            } else {
+                alert("Error saving default model");
+            }
+        } catch (err) {
+            console.error("Failed to save default model:", err);
+        }
+    };
+
+    const handleAddApiKey = async () => {
+        if (!apiKeyProvider || !apiKey) return;
+        try {
+            const res = await fetch(API_URL + "add_api", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ provider: apiKeyProvider, key: apiKey }),
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                alert("API Key added successfully!");
+                setApiKey("");
+            } else {
+                alert("Error adding API Key");
+            }
+        } catch (err) {
+            console.error("Failed to add API key:", err);
+        }
+    };
+
+    const handleSearch = async () => {
+        if (!text.trim()) return;
+        setIsLoading(true);
+        setResults(null);
+        setExpandedDocs({});
+        const mode = useAI ? "ai" : "retrieval";
+        const params = new URLSearchParams({
+            query: text,
+            mode: mode,
+            rewrite_query: String(rewriteQuery),
+        });
+        if (selectedProvider) {
+            params.append("provider", selectedProvider);
+        }
+
+        try {
+            const res = await fetch(`${API_URL}search?${params.toString()}`);
+            const data = await res.json();
+            setResults(data);
+        } catch (err) {
+            console.error("Search failed:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
         // Fetch health status from the backend
-        fetch("http://localhost:8000/api/health")
+        fetch(API_URL + "health")
             .then((res) => res.json())
             .then((data) => {
                 setHealth(
@@ -58,6 +215,7 @@ export default function App() {
 
     return (
         <div>
+            {/* theme */}
             <div>
                 <button
                     onClick={() =>
@@ -68,33 +226,237 @@ export default function App() {
                     {theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode"}
                 </button>
             </div>
+
+            {/* health check of the backend */}
             <div className="healthCheck">
                 <p>{health}</p>
             </div>
-            <div className="heading">
-                <a>{placeholder}</a>
-            </div>
-            <div className="inputContainer">
-                <input
-                    type="text"
-                    value={text}
-                    id="queryInputText"
-                    className="inputField"
-                    onChange={(e) => setText(e.target.value)}
-                    placeholder="Type here..."
-                />
+
+            <div className="settings">
                 <button
-                    onClick={() => console.log("Send:", text)}
-                    className="sendButton"
+                    onClick={() => setShowSettings(!showSettings)}
+                    className="settingsToggle"
                 >
-                    <img
-                        src={ravenLogo}
-                        alt="Raven icon"
-                        width="24"
-                        height="24"
-                    />
+                    {showSettings ? "✕ Close" : "⚙️ Settings"}
                 </button>
+                {showSettings && (
+                    <div className="settingsPanel">
+                        <div className="settingsGroup">
+                            <label>Provider</label>
+                            <select
+                                value={selectedProvider}
+                                onChange={(e) =>
+                                    setSelectedProvider(e.target.value)
+                                }
+                            >
+                                {providers.map((p) => (
+                                    <option key={p} value={p}>
+                                        {p}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="settingsGroup">
+                            <label>Model</label>
+                            <select
+                                value={selectedModel}
+                                onChange={(e) =>
+                                    setSelectedModel(e.target.value)
+                                }
+                                disabled={models.length === 0}
+                            >
+                                {models.map((m) => (
+                                    <option key={m} value={m}>
+                                        {m}
+                                    </option>
+                                ))}
+                            </select>
+                            <button onClick={handleSaveDefaultModel}>
+                                Save Default
+                            </button>
+                        </div>
+
+                        <div className="settingsGroup apiKeyGroup">
+                            <label>Add API Key</label>
+                            <select
+                                value={apiKeyProvider}
+                                onChange={(e) =>
+                                    setApiKeyProvider(e.target.value)
+                                }
+                            >
+                                {providers.map((p) => (
+                                    <option key={p} value={p}>
+                                        {p}
+                                    </option>
+                                ))}
+                            </select>
+                            <input
+                                type="password"
+                                placeholder="sk-..."
+                                value={apiKey}
+                                onChange={(e) => setApiKey(e.target.value)}
+                            />
+                            <button onClick={handleAddApiKey}>Save Key</button>
+                        </div>
+                    </div>
+                )}
             </div>
+
+            <div className="mainContent">
+                {isLoading ? (
+                    <div className="loaderText">{placeholder}</div>
+                ) : results ? (
+                    <div className="resultsContainer">
+                        {results.ai_response?.ai_answer && (
+                            <div className="aiResponse">
+                                <h3>AI Response</h3>
+                                <p>{results.ai_response.ai_answer}</p>
+                            </div>
+                        )}
+
+                        {results.retrieval?.results &&
+                            results.retrieval.results.length > 0 && (
+                                <div className="sourcesList">
+                                    <h3>Sources</h3>
+                                    {results.retrieval.results.map(
+                                        (doc: any, i: number) => (
+                                            <div key={i} className="sourceCard">
+                                                <h4>
+                                                    {doc.title ||
+                                                        "Untitled Document"}
+                                                </h4>
+                                                <p>
+                                                    {doc.text ||
+                                                        doc.snippets?.[0]
+                                                            ?.text ||
+                                                        JSON.stringify(doc)}
+                                                </p>
+                                                {doc.snippets &&
+                                                    doc.snippets.length > 1 && (
+                                                        <>
+                                                            {expandedDocs[
+                                                                i
+                                                            ] && (
+                                                                <div className="extraChunks">
+                                                                    {doc.snippets
+                                                                        .slice(
+                                                                            1,
+                                                                        )
+                                                                        .map(
+                                                                            (
+                                                                                snippet: any,
+                                                                                j: number,
+                                                                            ) => (
+                                                                                <div
+                                                                                    key={
+                                                                                        j
+                                                                                    }
+                                                                                    className="chunkItem"
+                                                                                >
+                                                                                    {snippet.text ||
+                                                                                        JSON.stringify(
+                                                                                            snippet,
+                                                                                        )}
+                                                                                </div>
+                                                                            ),
+                                                                        )}
+                                                                </div>
+                                                            )}
+                                                            <button
+                                                                className="expandButton"
+                                                                onClick={() =>
+                                                                    setExpandedDocs(
+                                                                        (
+                                                                            prev,
+                                                                        ) => ({
+                                                                            ...prev,
+                                                                            [i]: !prev[
+                                                                                i
+                                                                            ],
+                                                                        }),
+                                                                    )
+                                                                }
+                                                            >
+                                                                {expandedDocs[i]
+                                                                    ? "▲ Hide other texts"
+                                                                    : "▼ View other texts"}
+                                                            </button>
+                                                        </>
+                                                    )}
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+                            )}
+                    </div>
+                ) : (
+                    <>
+                        <div className="heading">
+                            <a>{placeholder}</a>
+                        </div>
+                        <div className="inputContainer">
+                            <input
+                                type="text"
+                                value={text}
+                                id="queryInputText"
+                                className="inputField"
+                                onChange={(e) => setText(e.target.value)}
+                                placeholder="Type here..."
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        handleSearch();
+                                    }
+                                }}
+                            />
+                            <button
+                                onClick={handleSearch}
+                                className="sendButton"
+                            >
+                                <img
+                                    src={ravenLogo}
+                                    alt="Raven icon"
+                                    width="24"
+                                    height="24"
+                                />
+                            </button>
+                        </div>
+                        <div className="switchesContainer">
+                            <label className="switchLabel">
+                                <input
+                                    type="checkbox"
+                                    checked={useAI}
+                                    onChange={(e) => setUseAI(e.target.checked)}
+                                />
+                                Use AI
+                            </label>
+                            <label className="switchLabel">
+                                <input
+                                    type="checkbox"
+                                    checked={rewriteQuery}
+                                    onChange={(e) =>
+                                        setRewriteQuery(e.target.checked)
+                                    }
+                                />
+                                Rewrite Query
+                            </label>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {results && !isLoading && (
+                <button
+                    className="newChatButton"
+                    onClick={() => {
+                        setResults(null);
+                        setText("");
+                        setExpandedDocs({});
+                    }}
+                >
+                    + New Chat
+                </button>
+            )}
         </div>
     );
 }

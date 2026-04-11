@@ -1,6 +1,7 @@
 import logging
 from time import perf_counter
 
+from app.core.config import get_defaults_from_config
 from app.db.qdrant import search_docs
 from app.llm.generation import LLMGeneration, prompt_generation
 
@@ -65,10 +66,18 @@ class Lodestone:
     @classmethod
     async def create(cls, request_id, query, limit, k, mode, provider, rewrite_query):
         """Async factory — use instead of __init__ for heavy work."""
+        if provider and hasattr(provider, "value"):
+            provider = provider.value
+
+        if provider is None:
+            defaults = get_defaults_from_config()
+            provider = defaults.get("active", {}).get("provider") or None
+
         instance = cls(request_id, query, limit, k, mode, provider, rewrite_query)
 
         if rewrite_query and provider is not None:
             instance.new_query = await instance.ai_mode.rewrite_query(query, provider)
+            instance.RESULT["retrieval"]["rewritten_query"] = instance.new_query
 
         _query = instance.new_query if rewrite_query else query
 

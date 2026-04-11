@@ -20,7 +20,7 @@ DEFAULT_ANTHROPIC_API_KEY = (
     if settings.anthropic_api_key is not None
     else None
 )
-DEFAULT_GOOGLE_MODEL = (
+DEFAULT_GOOGLE_API_KEY = (
     settings.google_api_key.get_secret_value()
     if settings.google_api_key is not None
     else None

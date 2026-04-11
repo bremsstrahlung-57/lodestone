@@ -8,7 +8,7 @@ It is designed to replace manual searching across folders, notes apps, and websi
 
 ---
 
-## **Current Version (v0.7.0)**
+## **Current Version (v0.9.1)**
 ### What it does
 
 - **Fully async backend** — end-to-end async across the API, database, embeddings, LLM clients, and retrieval pipeline

@@ -4,7 +4,7 @@ body {
     font-family: "Geist Mono", monospace;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .healthCheck {
@@ -14,11 +14,17 @@ body {
     position: fixed;
     top: 1rem;
     right: 1rem;
-    border: 3px dashed var(--accent-color);
+    border: 3px dashed var(--border-color);
     font-size: 16px;
-    height: "auto";
+    height: auto;
     padding: 8px 12px;
     background-color: transparent;
+    transition: 0.3s all ease-in-out;
+}
+
+.healthCheck:hover {
+    cursor: pointer;
+    border: 3px dashed var(--border-hover);
 }
 
 .inputContainer {
@@ -30,6 +36,7 @@ body {
     padding: 12px;
     width: 600px;
     max-width: 90vw;
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
 .inputField {
@@ -42,7 +49,7 @@ body {
     border: 3px dashed var(--border-color);
     /*border-radius: 10px;*/
     padding: 8px;
-    transition: 0.5s all ease-in-out;
+    transition: 0.3s all ease-in-out;
 }
 .inputField:focus {
     outline: none;
@@ -53,7 +60,7 @@ body {
 .sendButton {
     font-family: "Geist Mono", monospace;
     padding: 12px;
-    margin: 2px;
+    margin: 2px 8px;
     font-size: 16px;
     background-color: transparent;
     color: var(--text-color);
@@ -71,6 +78,7 @@ body {
 
 .themeToggleButton {
     height: "auto";
+    font-family: "Geist Mono", monospace;
     padding: 8px 12px;
     font-size: 16px;
     position: fixed;
@@ -95,6 +103,7 @@ body {
     width: 600px;
     max-width: 90vw;
     text-align: center;
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
 /* Optional: if raven.svg is black, invert it in dark mode */
@@ -105,4 +114,283 @@ body {
     :root:not([data-theme="light"]) .sendButton img {
         filter: invert(1);
     }
+}
+
+.settings {
+    position: fixed;
+    top: 1rem;
+    right: 10rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.settingsToggle {
+    font-family: "Geist Mono", monospace;
+    background: transparent;
+    color: var(--text-color);
+    border: 3px dashed var(--border-color);
+    padding: 8px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s border ease-in-out;
+}
+
+.settingsToggle:hover {
+    border: 3px dashed var(--border-hover);
+}
+
+.settingsPanel {
+    margin-top: 12px;
+    padding: 16px;
+    border: 3px dashed var(--accent-color);
+    background-color: color-mix(in srgb, var(--bg-color) 65%, transparent);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(4px);
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: expandDown 0.25s ease-out forwards;
+    transform-origin: top right;
+}
+
+.settingsGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.settingsGroup label {
+    font-weight: bold;
+}
+
+.settingsGroup select,
+.settingsGroup input {
+    font-family: "Geist Mono", monospace;
+    background: transparent;
+    color: var(--text-color);
+    border: 2px dashed var(--border-color);
+    padding: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+.settingsGroup select:focus,
+.settingsGroup input:focus {
+    border-color: var(--border-focus);
+}
+
+.settingsGroup select option {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.settingsGroup button {
+    font-family: "Geist Mono", monospace;
+    background: transparent;
+    color: var(--text-color);
+    border: 2px dashed var(--border-color);
+    padding: 8px;
+    cursor: pointer;
+    transition: 0.3s border ease-in-out;
+    margin-top: 4px;
+}
+
+.settingsGroup button:hover {
+    border-color: var(--border-hover);
+}
+
+.apiKeyGroup {
+    margin-top: 1rem;
+}
+
+.switchesContainer {
+    display: flex;
+    justify-content: flex-end;
+    width: 600px;
+    max-width: 90vw;
+    margin: 0 auto;
+    gap: 1rem;
+    margin-top: -8px;
+    font-size: 14px;
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.switchLabel {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.mainContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 6rem;
+    padding-bottom: 4rem;
+}
+
+.resultsContainer {
+    width: 800px;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 2rem;
+    text-align: left;
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.aiResponse {
+    border: 3px dashed var(--accent-color);
+    padding: 1.5rem;
+    background-color: color-mix(in srgb, var(--bg-color) 95%, transparent);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.aiResponse h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+}
+
+.aiResponse p {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.sourcesList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sourceCard {
+    border: 2px dashed var(--border-color);
+    padding: 1rem;
+    background-color: color-mix(in srgb, var(--bg-color) 98%, transparent);
+}
+
+.sourceCard h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    color: var(--accent-color);
+}
+
+.sourceCard p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    opacity: 0.9;
+}
+
+.loaderText {
+    font-size: 24px;
+    margin: 4rem 0;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.4;
+    }
+}
+
+.newChatButton {
+    font-family: "Geist Mono", monospace;
+    padding: 12px 24px;
+    font-size: 16px;
+    background-color: color-mix(in srgb, var(--bg-color) 65%, transparent);
+    color: var(--text-color);
+    border: 3px dashed var(--border-color);
+    cursor: pointer;
+    transition: 0.3s all ease-in-out;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+.newChatButton:hover {
+    border: 3px dashed var(--border-hover);
+    transform: translateY(-2px);
+}
+
+.expandButton {
+    background: transparent;
+    border: 2px dashed transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    margin-top: 8px;
+    font-family: "Geist Mono", monospace;
+    font-size: 12px;
+    opacity: 0.7;
+    width: 100%;
+    transition: 0.2s all;
+}
+
+.expandButton:hover {
+    opacity: 1;
+    border: 2px dashed var(--border-hover);
+}
+
+.extraChunks {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px dashed var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: expandDown 0.3s ease-out forwards;
+    transform-origin: top;
+}
+
+@keyframes expandDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chunkItem {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    opacity: 0.9;
+    padding-left: 12px;
+    border-left: 3px solid var(--accent-color);
 }

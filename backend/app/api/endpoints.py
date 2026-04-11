@@ -7,11 +7,13 @@ from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import JSONResponse
 
 from app.core.config import (
+    APIDefaultAIRequest,
     APIKeyRequest,
+    add_api_key,
     get_all_models,
     get_all_providers,
     get_defaults_from_config,
-    add_api_key,
+    save_default_model,
 )
 from app.ingest.doc_id import generate_request_id
 from app.llm.client import LLMProvider
@@ -140,6 +142,18 @@ async def add_modify_api_key(req: APIKeyRequest):
         return {
             "status": "success",
             "message": f"API key stored for {req.provider.value}",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/add_default_model", status_code=status.HTTP_201_CREATED)
+async def default_provider_and_model(req: APIDefaultAIRequest):
+    try:
+        save_default_model(req.provider, req.model)
+        return {
+            "status": "success",
+            "message": f"Default model saved {req.provider.value}: {req.model}",
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
