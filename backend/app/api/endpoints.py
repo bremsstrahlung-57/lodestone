@@ -1,9 +1,12 @@
 import logging
+import os
+import shutil
+import tempfile
 import time
 from importlib.metadata import version
 from typing import Literal, Optional
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import JSONResponse
 
 from app.core.config import (
@@ -15,7 +18,9 @@ from app.core.config import (
     get_defaults_from_config,
     save_default_model,
 )
+from app.db.sqlitedb import SQLiteDB
 from app.ingest.doc_id import generate_request_id
+from app.ingest.ingestion import ingest_file, ingest_text
 from app.llm.client import LLMProvider
 from app.retrieval.docs_lodestone import Lodestone
 
@@ -155,5 +160,38 @@ async def default_provider_and_model(req: APIDefaultAIRequest):
             "status": "success",
             "message": f"Default model saved {req.provider.value}: {req.model}",
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/ingest", status_code=status.HTTP_201_CREATED)
+async def upload_and_ingest(file: UploadFile = File(...)):
+    try:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = os.path.join(temp_dir, file.filename)
+            with open(temp_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+
+            await ingest_file(path=temp_path, source="user")
+
+        return {"status": "success", "message": f"Ingested {file.filename}"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/document/{doc_id}")
+async def get_document_content(doc_id: str):
+    try:
+        db = SQLiteDB()
+        content = await db.get_whole_file_data(doc_id)
+        await db.close()
+
+        if content is None:
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        return {"status": "success", "content": content}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

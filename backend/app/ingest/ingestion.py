@@ -24,23 +24,19 @@ def extract_pdf(path: str):
     return text, {"title": Path(path).stem, "source_type": "pdf", "path": path}
 
 
-def extract_docx(path: str) -> str:
+def extract_docx(path: str):
     from docx import Document
 
     doc = Document(path)
-    text =  "\n".join(p.text for p in doc.paragraphs)
+    text = "\n".join(p.text for p in doc.paragraphs)
 
     return text, {"title": Path(path).stem, "source_type": "pdf", "path": path}
+
 
 def extract_txt(path: str):
     text = Path(path).read_text(encoding="utf-8")
 
-    return text, {
-        "title": Path(path).stem,
-        "source_type": "txt",
-        "path": path
-    }
-
+    return text, {"title": Path(path).stem, "source_type": "txt", "path": path}
 
 
 async def ingest_text_core(text: str, source="user", title=None, metadata=None):
@@ -105,10 +101,7 @@ async def ingest_file(path: str, source="user"):
     text, metadata = extract_text(path)
 
     await ingest_text_core(
-        text=text,
-        source=source,
-        title=metadata["title"],
-        metadata=metadata
+        text=text, source=source, title=metadata["title"], metadata=metadata
     )
 
 

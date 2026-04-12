@@ -2,7 +2,7 @@ import argparse
 import asyncio
 import json
 import sys
-
+from pathlib import Path
 
 from app.db.qdrant import search_docs
 from app.ingest.ingestion import ingest_file
@@ -107,6 +107,22 @@ async def handle_ingest(args):
     await ingest_file(args.path)
 
 
+async def handle_ingest_samples(args):
+    samples_dir = Path(__file__).parent / "samples"
+    if not samples_dir.exists() or not samples_dir.is_dir():
+        print(f"Samples directory not found at {samples_dir}")
+        return
+
+    for file_path in samples_dir.iterdir():
+        if file_path.is_file():
+            print(f"Ingesting {file_path.name}...")
+            try:
+                await ingest_file(str(file_path))
+                print(f"Successfully ingested {file_path.name}")
+            except Exception as e:
+                print(f"Failed to ingest {file_path.name}: {e}")
+
+
 async def handle_search(args):
     cli = _build_cli_instance(args)
     print(f"\nQuery: {args.query}")
@@ -197,6 +213,12 @@ def main():
     )
     ingest_parser.add_argument("path", type=str, help="Path to the file to ingest")
     ingest_parser.set_defaults(func=handle_ingest)
+
+    # --- ingest-samples ---
+    ingest_samples_parser = subparsers.add_parser(
+        "ingest-samples", help="Ingest all files from the samples directory"
+    )
+    ingest_samples_parser.set_defaults(func=handle_ingest_samples)
 
     # --- search ---
     search_parser = subparsers.add_parser(

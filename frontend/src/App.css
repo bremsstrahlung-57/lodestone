@@ -394,3 +394,117 @@ body {
     padding-left: 12px;
     border-left: 3px solid var(--accent-color);
 }
+
+.dropzoneContainer {
+    width: 600px;
+    max-width: 90vw;
+    margin: 1rem auto;
+    padding: 2rem;
+    border: 3px dashed var(--border-color);
+    background: transparent;
+    text-align: center;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: 0.3s all ease-in-out;
+    font-size: 16px;
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.dropzoneContainer:hover,
+.dropzoneContainer.active {
+    border-color: var(--border-hover);
+    background-color: color-mix(in srgb, var(--text-color) 5%, transparent);
+}
+
+.dropzoneContainer input[type="file"] {
+    display: none;
+}
+
+.viewFullButton {
+    background: transparent;
+    border: 2px dashed var(--border-color);
+    color: var(--text-color);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    margin-top: 12px;
+    font-family: "Geist Mono", monospace;
+    font-size: 13px;
+    transition: 0.2s all;
+}
+
+.viewFullButton:hover {
+    border-color: var(--border-hover);
+    background-color: color-mix(in srgb, var(--text-color) 5%, transparent);
+}
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: color-mix(in srgb, var(--bg-color) 80%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.modalContent {
+    background-color: var(--bg-color);
+    border: 3px dashed var(--accent-color);
+    width: 800px;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    position: relative;
+    animation: expandDown 0.3s ease-out forwards;
+    transform-origin: center;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 2px dashed var(--border-color);
+    padding-bottom: 16px;
+}
+
+.modalHeader h3 {
+    margin: 0;
+    color: var(--accent-color);
+    font-size: 1.5rem;
+}
+
+.closeModalButton {
+    background: transparent;
+    border: 2px dashed var(--border-color);
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 4px 12px;
+    font-family: "Geist Mono", monospace;
+    font-size: 14px;
+    transition: 0.2s all;
+}
+
+.closeModalButton:hover {
+    border-color: var(--border-hover);
+}
+
+.modalBody {
+    overflow-y: auto;
+    flex: 1;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    padding-right: 8px;
+}

@@ -8,9 +8,12 @@ It is designed to replace manual searching across folders, notes apps, and websi
 
 ---
 
-## **Current Version (v0.9.1)**
+## **Current Version (v0.10.1)**
 ### What it does
 
+- **Interactive React Frontend** — clean, responsive UI with dark/light mode, drag-and-drop file upload, and real-time settings management
+- **Settings & API Key Management** — seamlessly switch between LLM providers and models, and add API keys directly from the UI
+- **Expandable Search Results** — view full document texts and explore overlapping chunks right from the search results
 - **Fully async backend** — end-to-end async across the API, database, embeddings, LLM clients, and retrieval pipeline
 - **Async Qdrant client** — switched from `QdrantClient` to `AsyncQdrantClient` for non-blocking vector operations
 - **Async SQLite via aiosqlite** — lazy-connected `aiosqlite` replaces the synchronous `sqlite3` driver with proper lifecycle management

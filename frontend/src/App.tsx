@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import ravenLogo from "./assets/raven.svg";
 import "./App.css";
 
@@ -47,6 +48,62 @@ export default function App() {
     const [expandedDocs, setExpandedDocs] = useState<Record<number, boolean>>(
         {},
     );
+    const [isDragging, setIsDragging] = useState(false);
+    const [fullDocContent, setFullDocContent] = useState<string | null>(null);
+    const [fullDocTitle, setFullDocTitle] = useState<string>("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const uploadFile = async (file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await fetch(API_URL + "ingest", {
+                method: "POST",
+                body: formData,
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                toast.success(data.message || "File ingested successfully!");
+            } else {
+                toast.error(
+                    "Error: " + (data.detail || "Failed to ingest file"),
+                );
+            }
+            console.log("Upload result:", data);
+        } catch (err) {
+            console.error("Upload failed:", err);
+            toast.error("Upload failed. Check console for details.");
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const file = e.dataTransfer.files[0];
+            console.log("Uploading:", file.name);
+            uploadFile(file);
+        }
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            console.log("Uploading:", file.name);
+            uploadFile(file);
+        }
+    };
 
     const [theme, setTheme] = useState<"light" | "dark">(() => {
         const saved = localStorage.getItem("theme");
@@ -143,12 +200,29 @@ export default function App() {
             });
             const data = await res.json();
             if (data.status === "success") {
-                alert("Default model saved successfully!");
+                toast.success("Default model saved successfully!");
             } else {
-                alert("Error saving default model");
+                toast.error("Error saving default model");
             }
         } catch (err) {
             console.error("Failed to save default model:", err);
+        }
+    };
+
+    const fetchFullDocument = async (docId: string, title: string) => {
+        try {
+            const res = await fetch(`${API_URL}document/${docId}`);
+            const data = await res.json();
+            if (data.status === "success") {
+                setFullDocContent(data.content);
+                setFullDocTitle(title || "Untitled Document");
+                setIsModalOpen(true);
+            } else {
+                toast.error("Failed to load document content.");
+            }
+        } catch (err) {
+            console.error("Error fetching full document:", err);
+            toast.error("Error fetching full document.");
         }
     };
 
@@ -162,10 +236,10 @@ export default function App() {
             });
             const data = await res.json();
             if (data.status === "success") {
-                alert("API Key added successfully!");
+                toast.success("API Key added successfully!");
                 setApiKey("");
             } else {
-                alert("Error adding API Key");
+                toast.error("Error adding API Key");
             }
         } catch (err) {
             console.error("Failed to add API key:", err);
@@ -379,11 +453,22 @@ export default function App() {
                                                                 }
                                                             >
                                                                 {expandedDocs[i]
-                                                                    ? "▲ Hide other texts"
-                                                                    : "▼ View other texts"}
+                                                                    ? "▲ Hide other chunks"
+                                                                    : "▼ View other chunks"}
                                                             </button>
                                                         </>
                                                     )}
+                                                <button
+                                                    className="viewFullButton"
+                                                    onClick={() =>
+                                                        fetchFullDocument(
+                                                            doc.doc_id,
+                                                            doc.title,
+                                                        )
+                                                    }
+                                                >
+                                                    View Full Document
+                                                </button>
                                             </div>
                                         ),
                                     )}
@@ -441,6 +526,22 @@ export default function App() {
                                 Rewrite Query
                             </label>
                         </div>
+                        <div
+                            className={`dropzoneContainer ${isDragging ? "active" : ""}`}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={() =>
+                                document.getElementById("fileInput")?.click()
+                            }
+                        >
+                            <input
+                                type="file"
+                                id="fileInput"
+                                onChange={handleFileSelect}
+                            />
+                            <p>Drop a file here or click to select</p>
+                        </div>
                     </>
                 )}
             </div>
@@ -456,6 +557,29 @@ export default function App() {
                 >
                     + New Chat
                 </button>
+            )}
+
+            {isModalOpen && (
+                <div
+                    className="modalOverlay"
+                    onClick={() => setIsModalOpen(false)}
+                >
+                    <div
+                        className="modalContent"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="modalHeader">
+                            <h3>{fullDocTitle}</h3>
+                            <button
+                                className="closeModalButton"
+                                onClick={() => setIsModalOpen(false)}
+                            >
+                                ✕ Close
+                            </button>
+                        </div>
+                        <div className="modalBody">{fullDocContent}</div>
+                    </div>
+                </div>
             )}
         </div>
     );
