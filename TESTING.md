@@ -68,3 +68,19 @@ pytest app/tests/test_prompt_injection.py -v -s
 - Add test cases to the relevant JSON file in `app/tests/test_cases/`, or create a new `test_*.py` module.
 - Use the canonical sample corpus in `app/scripts/samples/` — do not add or modify sample files without discussion, as it affects all retrieval and ranking assertions.
 - Use `pytest.mark.parametrize` for data-driven tests to keep things clean and extensible.
+
+### Frontend Testing & Development
+
+To test and run the frontend React application locally:
+
+1. Ensure the backend FastAPI server and Qdrant are running.
+2. Navigate to the `frontend/` directory:
+   ```bash
+   cd frontend
+   ```
+3. Install dependencies and start the Vite development server:
+   ```bash
+   npm install
+   npm run dev
+   ```
+4. Open the provided localhost URL (usually `http://localhost:5173`) in your browser to interact with the UI. Ensure you test in both Light and Dark modes.

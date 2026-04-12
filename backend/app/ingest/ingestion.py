@@ -2,103 +2,108 @@ import logging
 from pathlib import Path
 
 from app.core.logging import setup_logging
-
-setup_logging()
-
 from app.db.qdrant import ingest_data
 from app.db.sqlitedb import SQLiteDB
 from app.ingest.chunking import chunk_text
 from app.ingest.doc_id import make_doc_id
+
+setup_logging()
+
 
 logger = logging.getLogger(__name__)
 
 db_action = SQLiteDB()
 
 
-async def ingest_file(path: str, source="user"):
-    """File ingestion for Vector DB"""
+def extract_pdf(path: str):
+    from pypdf import PdfReader
+
+    reader = PdfReader(path)
+    text = "\n".join(page.extract_text() or "" for page in reader.pages)
+
+    return text, {"title": Path(path).stem, "source_type": "pdf", "path": path}
+
+
+def extract_docx(path: str):
+    from docx import Document
+
+    doc = Document(path)
+    text = "\n".join(p.text for p in doc.paragraphs)
+
+    return text, {"title": Path(path).stem, "source_type": "pdf", "path": path}
+
+
+def extract_txt(path: str):
+    text = Path(path).read_text(encoding="utf-8")
+
+    return text, {"title": Path(path).stem, "source_type": "txt", "path": path}
+
+
+async def ingest_text_core(text: str, source="user", title=None, metadata=None):
     await db_action.connect()
-    logger.info("ingesting file", extra={"path": path, "source": source})
 
-    try:
-        text = Path(path).read_text(encoding="utf-8")
-    except FileNotFoundError:
-        logger.exception("file not found", extra={"path": path})
-        raise
-    except OSError:
-        logger.exception("failed to read file", extra={"path": path})
-        raise
-
-    title = Path(path).stem
     doc_id = make_doc_id(text)
     chunks = chunk_text(text)
-    total_chunks = chunks[-1].get("chunk_id", 0) + 1
+    total_chunks = len(chunks)
+    if title is None:
+        title = text[:10]
+    title = title.strip()
 
     logger.info(
-        "file chunked",
+        "ingesting",
         extra={
-            "path": path,
-            "title": title,
             "doc_id": doc_id,
+            "source": source,
             "total_chunks": total_chunks,
         },
     )
 
     await db_action.insert_doc_ib_db(
         doc_id=doc_id,
-        title=title.strip(),
+        title=title,
         content=text,
         source=source,
         total_chunks=total_chunks,
     )
 
-    docs = []
-    for c in chunks:
-        docs.append(
-            {
-                "doc_id": doc_id,
-                "text": c["text"],
-                "chunk_id": c["chunk_id"],
-            }
-        )
-
-    await ingest_data(docs)
-    logger.info(
-        "file ingestion complete",
-        extra={"doc_id": doc_id, "total_chunks": total_chunks},
-    )
-    await db_action.close()
-
-
-async def ingest_text(text: str):
-    """Text ingestiong for Vector DB"""
-    await db_action.connect()
-    doc_id = make_doc_id(text)
-    chunks = chunk_text(text)
-    total_chunks = len(chunks)
-
-    logger.info(
-        "ingesting text",
-        extra={
+    docs = [
+        {
             "doc_id": doc_id,
-            "text_length": len(text),
-            "total_chunks": total_chunks,
-        },
-    )
-
-    docs = []
-    for c in chunks:
-        docs.append(
-            {
-                "doc_id": doc_id,
-                "text": c["text"],
-                "chunk_id": c["chunk_id"],
-            }
-        )
+            "text": c["text"],
+            "chunk_id": c["chunk_id"],
+        }
+        for c in chunks
+    ]
 
     await ingest_data(docs)
+
     logger.info(
-        "text ingestion complete",
-        extra={"doc_id": doc_id, "total_chunks": total_chunks},
+        "ingestion complete", extra={"doc_id": doc_id, "total_chunks": total_chunks}
     )
+
     await db_action.close()
+
+
+def extract_text(path: str):
+    ext = Path(path).suffix.lower()
+
+    if ext == ".pdf":
+        return extract_pdf(path)
+    elif ext == ".docx":
+        return extract_docx(path)
+    elif ext == ".txt":
+        return extract_txt(path)
+    else:
+        raise ValueError("unsupported file")
+
+
+async def ingest_file(path: str, source="user"):
+    text, metadata = extract_text(path)
+
+    await ingest_text_core(
+        text=text, source=source, title=metadata["title"], metadata=metadata
+    )
+
+
+async def ingest_text(text: str, source="user"):
+    await ingest_text_core(text=text, source=source)

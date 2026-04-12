@@ -1,38 +1,79 @@
-# Lodestone
+<div align="center">
 
-Lodestone is a local-first personal knowledge retrieval system that lets you store and search your documents semantically.
+<h1>Lodestone</h1>
 
-You can upload files, text, and bookmarks, and later retrieve them using natural language queries instead of filenames, folder paths, or exact keywords. Lodestone runs locally, keeps your data under your control, and optionally uses AI to generate answers grounded in your own documents.
+<p>Lodestone is a local-first document retrieval system. Drop in files, then search them with natural language instead of filenames, folder structures, or exact keywords. Lodestone runs entirely on your machine, keeps your data local, and can optionally use an LLM to generate answers grounded in your documents.</p>
 
-It is designed to replace manual searching across folders, notes apps, and websites with a single searchable memory.
+https://github.com/user-attachments/assets/c197bb8a-7c3d-4574-ba9f-ebc9ad48db85
+
+</div>
+
+---
+
+## Features
+
+- Semantic search over your own documents using sentence embeddings
+- AI-answered queries with retrieved context as grounding
+- Drag-and-drop file ingestion from the browser
+- Full document viewer with expandable neighboring chunks
+- Switchable LLM providers: Anthropic, OpenAI, Gemini, Groq
+- Dark/light theme, persistent settings, API key management from the UI
+- Content-addressed deduplication via SHA3-256
 
 ---
 
-## **Current Version (v0.8.0)**
-### What it does
+## How It Works
 
-- **Fully async backend** — end-to-end async across the API, database, embeddings, LLM clients, and retrieval pipeline
-- **Async Qdrant client** — switched from `QdrantClient` to `AsyncQdrantClient` for non-blocking vector operations
-- **Async SQLite via aiosqlite** — lazy-connected `aiosqlite` replaces the synchronous `sqlite3` driver with proper lifecycle management
-- **Async LLM providers** — all four providers (Anthropic, OpenAI, Gemini, Groq) now use their native async clients (`AsyncAnthropic`, `AsyncOpenAI`, `AsyncGroq`, Gemini `aio`)
-- **Thread-offloaded embeddings & cross-encoder** — CPU-bound sentence-transformer encoding and cross-encoder reranking run in `asyncio.to_thread` to avoid blocking the event loop
-- **Async factory for Lodestone** — `Lodestone.create()` async classmethod replaces heavy work in `__init__`, keeping construction clean
-- **Async test suite** — all tests converted to async with `pytest-asyncio` (`asyncio_mode = "auto"`)
-- **Semantic search** over your own documents using sentence embeddings (MiniLM-L6-v2)
-- **Two search modes** — plain retrieval or AI-answered with context from your docs
-- **Multiple LLM providers** — Anthropic, OpenAI, Gemini and Groq, switchable per request
-- **Chunking with overlap** — documents are split into overlapping chunks for better retrieval coverage
-- **Chunk window expansion** — when a chunk matches, neighboring chunks are pulled in for fuller context
-- **Score-based filtering** — results are ranked and filtered so you don't get garbage matches back
-- **Document ingestion** — ingest files or raw text, automatically chunked, embedded, and stored
-- **Qdrant vector DB** — all embeddings stored in Qdrant, runs locally via Docker
-- **SQLite metadata store** — full document content and metadata cached locally via aiosqlite
-- **Content-addressed doc IDs** — SHA3-256 hashing, same content = same ID, no duplicates
-- **Structured logging** — rotating file logs across all layers (API, DB, LLM, ingestion, retrieval)
-- **FastAPI backend** — single `/api/search` endpoint handles both retrieval and AI modes
-- **CORS ready** — configured for local frontend on port 3000
-- **Query rewriting** — rewrite query using ai for better search results
-- **Cross Encoder Reranking** - uses cross encoder for cross encoder scoring
-- **Normalized Scores** - ranks retrieved docs using cosine scores and normalized cross encoder scores
+Ingested documents are chunked, embedded with MiniLM-L6-v2, and stored in a local Qdrant instance. Queries go through optional AI rewriting, dense vector search, cross-encoder reranking, and score-based filtering before results are returned. Full document content is cached in SQLite. Everything is async end-to-end.
 
 ---
+
+## Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React + Vite |
+| Backend | FastAPI |
+| Vector store | Qdrant (local via Docker) |
+| Metadata store | SQLite via aiosqlite |
+| Embeddings | MiniLM-L6-v2 |
+| Reranking | Cross-encoder |
+| LLM providers | Anthropic, OpenAI, Gemini, Groq |
+
+---
+
+## Quickstart
+
+**Prerequisites**: Python 3.10+, Node.js, Docker
+
+```bash
+# Start Qdrant
+docker run -p 6333:6333 qdrant/qdrant
+
+# Backend
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+
+# Frontend
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`. Add your API key in Settings, drop in a file, and search.
+
+---
+
+## Configuration
+
+Lodestone follows the XDG base directory spec. On first run, config files are created at:
+
+- `~/.config/lodestone/config.toml` — general settings and defaults
+- `~/.config/lodestone/keys.toml` — API keys, gitignored by default
+
+---
+
+## Status
+
+Active development. v0.10.1. Known gaps: server unavailability handling, CORS for detached frontend deployments, file size limits.

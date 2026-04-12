@@ -48,7 +48,7 @@ You are a document-grounded assistant. Answer questions using ONLY the provided 
 
 
 class LLMProvider(str, Enum):
-    gemini = "gemini"
+    google = "google"
     groq = "groq"
     openai = "openai"
     anthropic = "anthropic"
@@ -110,10 +110,10 @@ class BaseLLM(ABC):
         pass
 
 
-class GeminiLLM(BaseLLM):
+class GoogleLLM(BaseLLM):
     def __init__(self, api_key: str, model: str):
         self.client = genai.Client(api_key=api_key)
-        self.apiprovider = "gemini"
+        self.apiprovider = "google"
         self.model = model
         logger.info(f"{self.apiprovider} client initialized", extra={"model": model})
 
@@ -264,7 +264,7 @@ class GroqLLM(BaseLLM):
             )
 
             logger.debug(
-                "gemini response finished generating",
+                "google response finished generating",
                 extra={
                     "model": self.model,
                     "response_latency_ms": round(latency_ms, 2),

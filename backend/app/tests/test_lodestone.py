@@ -1,6 +1,7 @@
 import json
 
 import pytest
+
 from app.retrieval.docs_lodestone import Lodestone
 
 
@@ -178,7 +179,7 @@ async def test_lodestone_retrieval_mode_ignores_provider():
         mode="retrieval",
         limit=5,
         k=3,
-        provider="gemini",
+        provider="google",
         rewrite_query=False,
     )
     result = await rec.get_results()
@@ -223,7 +224,7 @@ async def test_rewrite_query_no_provider_falls_back():
     assert result["retrieval"]["rewritten_query"] == query
 
 
-@pytest.mark.parametrize("provider", ["gemini", "groq"])
+@pytest.mark.parametrize("provider", ["google", "groq"])
 async def test_rewrite_query_produces_different_query(provider):
     """When rewrite_query=True with a provider, the rewritten query should differ from the original"""
     query = "eldenring plot pls"
@@ -247,7 +248,7 @@ async def test_rewrite_query_produces_different_query(provider):
     )
 
 
-@pytest.mark.parametrize("provider", ["gemini", "groq"])
+@pytest.mark.parametrize("provider", ["google", "groq"])
 async def test_rewrite_query_preserves_question_intent(provider):
     """A question query should remain a question after rewriting, not become a label/description"""
     query = "kratos from which game"
@@ -283,7 +284,7 @@ async def test_rewrite_query_clear_query_minimal_change():
         mode="retrieval",
         limit=3,
         k=2,
-        provider="gemini",
+        provider="google",
         rewrite_query=True,
     )
     result = await rec.get_results()

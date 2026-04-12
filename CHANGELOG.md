@@ -6,6 +6,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.10.1] - 2026-04-12
+### Added
+- **Frontend MVP**: Fully functional React/Vite web interface with dark/light mode, CSS animations, and responsive design.
+- **Drag-and-Drop Ingestion**: File drag-and-drop support in the UI, backed by a new `/ingest` endpoint using secure temporary directories.
+- **Full Document Viewer**: Modal view for complete document text, backed by a new `/document/{doc_id}` endpoint.
+- **Context Expansion**: UI support for viewing neighboring chunks around any retrieved document.
+- **CLI Batch Ingestion**: `ingest-samples` command in `cli.py` for ingesting a directory of sample files in one shot.
+- **Toast Notifications**: `react-hot-toast` integration with theme-aware styling.
+
+### Changed
+- Rebuilt the React app into a full semantic search and chat interface: added query/result routing, chat state management, and document viewer components.
+- SQLite queries now fetch document content via `doc_id` rather than title.
+
+### Fixed
+- `docs_lodestone.py` was returning the original query in results instead of the AI-rewritten query.
+- `SQLiteDB.get_whole_file_data` was improperly awaiting cursor execution, causing fetch errors.
+- UI chunk rendering was crashing due to Qdrant object dictionaries being parsed instead of raw strings.
+
+---
+
+## [0.9.1] - 2026-04-11
+### Added
+- `APIDefaultAIRequest` schema and `save_default_model` handler with a `/add_default_model` POST endpoint to persist provider and model defaults.
+- Settings UI for provider/model selection, default saving, API key input, and theme persistence.
+
+### Changed
+- Lodestone now falls back to configured defaults when provider is omitted from a request.
+- `rewritten_query` is now exposed in retrieval results.
+
+### Fixed
+- Incorrect `DEFAULT_GOOGLE_API_KEY` naming in the LLM factory.
+
+---
+
+## [0.9.0] - 2026-04-07
+### Added
+- App config now loads LLM defaults and API keys on startup.
+
+### Changed
+- Renamed Gemini provider to Google across config, LLM factory, CLI, tests, and fixtures.
+
+### Removed
+- `backend/.env.example`.
+
+---
+
 ## [0.8.0] - 2026-03-21
 
 ### Added

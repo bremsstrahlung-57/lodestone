@@ -94,3 +94,18 @@ class SQLiteDB:
         except aiosqlite.Error:
             logger.exception("failed to read documents")
             raise
+
+    async def get_whole_file_data(self, doc_id: str):
+        await self._ensure_connected()
+        try:
+            cursor = await self._db.execute(
+                "SELECT content FROM documents WHERE doc_id = ?", (doc_id,)
+            )
+
+            row = await cursor.fetchone()
+            logger.debug(f"document {doc_id} fetched")
+            return row[0] if row else None
+
+        except aiosqlite.Error:
+            logger.exception("failed to read document")
+            raise

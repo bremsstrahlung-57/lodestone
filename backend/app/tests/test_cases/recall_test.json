@@ -58,19 +58,19 @@
             }
         },
         {
-            "test_id": "ai_mode_gemini",
-            "description": "AI mode with Gemini provider - should return AI answer",
+            "test_id": "ai_mode_google",
+            "description": "AI mode with google provider - should return AI answer",
             "input": {
                 "query": "What are RPG games?",
                 "mode": "ai",
                 "limit": 5,
                 "k": 3,
-                "provider": "gemini"
+                "provider": "google"
             },
             "expected": {
                 "mode": "ai",
                 "ai_answer_should_exist": true,
-                "provider": "gemini",
+                "provider": "google",
                 "latency_ms_should_exist": true,
                 "llm_fields": [
                     "prompt_tokens",
@@ -208,12 +208,12 @@
                 "mode": "ai",
                 "limit": 10,
                 "k": 5,
-                "provider": "gemini"
+                "provider": "google"
             },
             "expected": {
                 "mode": "ai",
                 "ai_answer_should_exist": true,
-                "provider": "gemini",
+                "provider": "google",
                 "latency_ms_should_exist": true,
                 "results_max_count": 10
             }
@@ -271,14 +271,14 @@
             }
         },
         {
-            "test_id": "rewrite_query_gemini",
-            "description": "Query rewriting with Gemini - should rewrite abbreviations while preserving intent",
+            "test_id": "rewrite_query_google",
+            "description": "Query rewriting with google - should rewrite abbreviations while preserving intent",
             "input": {
                 "query": "mc of gow",
                 "mode": "retrieval",
                 "limit": 5,
                 "k": 3,
-                "provider": "gemini",
+                "provider": "google",
                 "rewrite_query": true
             },
             "expected": {
@@ -297,6 +297,6 @@
             "retrieval": "Returns search results without AI processing",
             "ai": "Returns search results with AI-generated answer from specified provider"
         },
-        "providers": ["gemini", "groq"]
+        "providers": ["google", "groq"]
     }
 }

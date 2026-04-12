@@ -1,367 +1,510 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+@import url("https://fonts.googleapis.com/css2?family=Geist+Mono&display=swap");
 
-.app-container {
-    width: 100%;
-    min-height: 100vh;
+body {
+    font-family: "Geist Mono", monospace;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    position: relative;
-    padding: 2rem;
+    align-items: flex-start;
 }
 
-/* ── Health Check Button (top-right) ── */
-
-.health-check-btn {
+.healthCheck {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: fixed;
     top: 1rem;
-    right: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 1rem;
-    border-radius: 0.6rem;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.06);
-    color: inherit;
-    font-size: 0.85rem;
-    font-weight: 500;
+    right: 1rem;
+    border: 3px dashed var(--border-color);
+    font-size: 16px;
+    height: auto;
+    padding: 8px 12px;
+    background-color: transparent;
+    transition: 0.3s all ease-in-out;
+}
+
+.healthCheck:hover {
     cursor: pointer;
-    transition:
-        background 0.2s,
-        border-color 0.2s;
-    z-index: 100;
-    backdrop-filter: blur(8px);
+    border: 3px dashed var(--border-hover);
 }
 
-.health-check-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.25);
-}
-
-.spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-top-color: currentColor;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ── Dialog ── */
-
-.dialog-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(4px);
+.inputContainer {
     display: flex;
-    align-items: center;
     justify-content: center;
-    z-index: 1000;
-    animation: fade-in 0.15s ease-out;
-}
-
-@keyframes fade-in {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-.dialog {
-    background: #2a2a2a;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    width: 90%;
-    max-width: 460px;
-    overflow: hidden;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
-    animation: dialog-pop 0.2s ease-out;
-}
-
-@keyframes dialog-pop {
-    from {
-        transform: scale(0.95) translateY(10px);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-    }
-}
-
-.dialog-header {
-    display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 24px;
+    /*flex-direction: column;*/
+    padding: 12px;
+    width: 600px;
+    max-width: 90vw;
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
-.dialog-header h3 {
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.dialog-close {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.5rem;
-    border: none;
+.inputField {
+    font-family: "Geist Mono", monospace;
+    font-size: 20px;
+    flex: 1;
+    height: 50px;
     background: transparent;
-    color: inherit;
-    font-size: 1.35rem;
+    color: var(--text-color);
+    border: 3px dashed var(--border-color);
+    /*border-radius: 10px;*/
+    padding: 8px;
+    transition: 0.3s all ease-in-out;
+}
+.inputField:focus {
+    outline: none;
+    box-shadow: none;
+    border: 3px dashed var(--border-focus);
+}
+
+.sendButton {
+    font-family: "Geist Mono", monospace;
+    padding: 12px;
+    margin: 2px 8px;
+    font-size: 16px;
+    background-color: transparent;
+    color: var(--text-color);
+    border: 3px dashed var(--border-color);
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s border ease-in-out;
+}
+.sendButton:hover {
     cursor: pointer;
-    transition: background 0.15s;
-    line-height: 1;
+    border: 3px dashed var(--border-hover);
 }
 
-.dialog-close:hover {
-    background: rgba(255, 255, 255, 0.1);
+.themeToggleButton {
+    height: "auto";
+    font-family: "Geist Mono", monospace;
+    padding: 8px 12px;
+    font-size: 16px;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    background-color: transparent;
+    color: var(--text-color);
+    border: 3px dashed var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s border ease-in-out;
+}
+.themeToggleButton:hover {
+    cursor: pointer;
+    border: 3px dashed var(--border-hover);
 }
 
-.dialog-body {
-    padding: 1.25rem;
+.heading {
+    margin: 10px;
+    font-size: 40px;
+    width: 600px;
+    max-width: 90vw;
+    text-align: center;
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
-.dialog-body pre {
-    font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
-    font-size: 0.82rem;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 0.5rem;
-    padding: 1rem;
+/* Optional: if raven.svg is black, invert it in dark mode */
+[data-theme="dark"] .sendButton img {
+    filter: invert(1);
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .sendButton img {
+        filter: invert(1);
+    }
 }
 
-/* ── Main Content ── */
+.settings {
+    position: fixed;
+    top: 1rem;
+    right: 10rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
 
-.main-content {
-    width: 100%;
-    max-width: 680px;
+.settingsToggle {
+    font-family: "Geist Mono", monospace;
+    background: transparent;
+    color: var(--text-color);
+    border: 3px dashed var(--border-color);
+    padding: 8px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s border ease-in-out;
+}
+
+.settingsToggle:hover {
+    border: 3px dashed var(--border-hover);
+}
+
+.settingsPanel {
+    margin-top: 12px;
+    padding: 16px;
+    border: 3px dashed var(--accent-color);
+    background-color: color-mix(in srgb, var(--bg-color) 65%, transparent);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(4px);
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: expandDown 0.25s ease-out forwards;
+    transform-origin: top right;
+}
+
+.settingsGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.settingsGroup label {
+    font-weight: bold;
+}
+
+.settingsGroup select,
+.settingsGroup input {
+    font-family: "Geist Mono", monospace;
+    background: transparent;
+    color: var(--text-color);
+    border: 2px dashed var(--border-color);
+    padding: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+.settingsGroup select:focus,
+.settingsGroup input:focus {
+    border-color: var(--border-focus);
+}
+
+.settingsGroup select option {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.settingsGroup button {
+    font-family: "Geist Mono", monospace;
+    background: transparent;
+    color: var(--text-color);
+    border: 2px dashed var(--border-color);
+    padding: 8px;
+    cursor: pointer;
+    transition: 0.3s border ease-in-out;
+    margin-top: 4px;
+}
+
+.settingsGroup button:hover {
+    border-color: var(--border-hover);
+}
+
+.apiKeyGroup {
+    margin-top: 1rem;
+}
+
+.switchesContainer {
+    display: flex;
+    justify-content: flex-end;
+    width: 600px;
+    max-width: 90vw;
+    margin: 0 auto;
+    gap: 1rem;
+    margin-top: -8px;
+    font-size: 14px;
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.switchLabel {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.mainContent {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-}
-
-.greeting h1 {
-    font-size: 1.85rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-/* ── Input Area ── */
-
-.input-area {
     width: 100%;
+    margin-top: 6rem;
+    padding-bottom: 4rem;
+}
+
+.resultsContainer {
+    width: 800px;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 2rem;
+    text-align: left;
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.aiResponse {
+    border: 3px dashed var(--accent-color);
+    padding: 1.5rem;
+    background-color: color-mix(in srgb, var(--bg-color) 95%, transparent);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.aiResponse h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+}
+
+.aiResponse p {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.sourcesList {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-.textbar-container {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.5rem;
-    background: #303030;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    padding: 0.75rem 0.75rem 0.75rem 1.15rem;
-    transition:
-        border-color 0.2s,
-        box-shadow 0.2s;
+.sourceCard {
+    border: 2px dashed var(--border-color);
+    padding: 1rem;
+    background-color: color-mix(in srgb, var(--bg-color) 98%, transparent);
 }
 
-.textbar-container:focus-within {
-    border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+.sourceCard h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    color: var(--accent-color);
 }
 
-.textbar {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: inherit;
-    font-family: inherit;
+.sourceCard p {
+    margin: 0;
     font-size: 0.95rem;
-    line-height: 1.5;
-    resize: none;
-    min-height: 24px;
-    max-height: 200px;
+    color: var(--text-color);
+    opacity: 0.9;
 }
 
-.textbar::placeholder {
-    color: rgba(255, 255, 255, 0.35);
+.loaderText {
+    font-size: 24px;
+    margin: 4rem 0;
+    animation: pulse 1.5s infinite ease-in-out;
 }
 
-.send-btn {
-    flex-shrink: 0;
-    width: 36px;
-    height: 36px;
+@keyframes pulse {
+    0% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.4;
+    }
+}
+
+.newChatButton {
+    font-family: "Geist Mono", monospace;
+    padding: 12px 24px;
+    font-size: 16px;
+    background-color: color-mix(in srgb, var(--bg-color) 65%, transparent);
+    color: var(--text-color);
+    border: 3px dashed var(--border-color);
+    cursor: pointer;
+    transition: 0.3s all ease-in-out;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+.newChatButton:hover {
+    border: 3px dashed var(--border-hover);
+    transform: translateY(-2px);
+}
+
+.expandButton {
+    background: transparent;
+    border: 2px dashed transparent;
+    color: var(--text-color);
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.6rem;
-    border: none;
-    background: #fff;
-    color: #1a1a1a;
-    cursor: pointer;
-    transition:
-        opacity 0.15s,
-        transform 0.1s;
+    padding: 4px 8px;
+    margin-top: 8px;
+    font-family: "Geist Mono", monospace;
+    font-size: 12px;
+    opacity: 0.7;
+    width: 100%;
+    transition: 0.2s all;
 }
 
-.send-btn:disabled {
-    opacity: 0.25;
-    cursor: default;
+.expandButton:hover {
+    opacity: 1;
+    border: 2px dashed var(--border-hover);
 }
 
-.send-btn:not(:disabled):hover {
-    opacity: 0.85;
-}
-
-.send-btn:not(:disabled):active {
-    transform: scale(0.93);
-}
-
-/* ── File Drop Zone ── */
-
-.file-drop-zone {
+.extraChunks {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px dashed var(--border-color);
     display: flex;
     flex-direction: column;
+    gap: 12px;
+    animation: expandDown 0.3s ease-out forwards;
+    transform-origin: top;
+}
+
+@keyframes expandDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chunkItem {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    opacity: 0.9;
+    padding-left: 12px;
+    border-left: 3px solid var(--accent-color);
+}
+
+.dropzoneContainer {
+    width: 600px;
+    max-width: 90vw;
+    margin: 1rem auto;
+    padding: 2rem;
+    border: 3px dashed var(--border-color);
+    background: transparent;
+    text-align: center;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: 0.3s all ease-in-out;
+    font-size: 16px;
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.dropzoneContainer:hover,
+.dropzoneContainer.active {
+    border-color: var(--border-hover);
+    background-color: color-mix(in srgb, var(--text-color) 5%, transparent);
+}
+
+.dropzoneContainer input[type="file"] {
+    display: none;
+}
+
+.viewFullButton {
+    background: transparent;
+    border: 2px dashed var(--border-color);
+    color: var(--text-color);
+    cursor: pointer;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 2rem 1.5rem;
-    border: 2px dashed rgba(255, 255, 255, 0.15);
-    border-radius: 1rem;
-    cursor: default;
-    transition:
-        border-color 0.2s,
-        background 0.2s;
+    padding: 6px 12px;
+    margin-top: 12px;
+    font-family: "Geist Mono", monospace;
+    font-size: 13px;
+    transition: 0.2s all;
 }
 
-.file-drop-zone:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.02);
+.viewFullButton:hover {
+    border-color: var(--border-hover);
+    background-color: color-mix(in srgb, var(--text-color) 5%, transparent);
 }
 
-.upload-icon {
-    color: rgba(255, 255, 255, 0.3);
-    margin-bottom: 0.15rem;
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: color-mix(in srgb, var(--bg-color) 80%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out forwards;
 }
 
-.drop-text {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.55);
+.modalContent {
+    background-color: var(--bg-color);
+    border: 3px dashed var(--accent-color);
+    width: 800px;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    position: relative;
+    animation: expandDown 0.3s ease-out forwards;
+    transform-origin: center;
 }
 
-.drop-subtext {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.3);
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 2px dashed var(--border-color);
+    padding-bottom: 16px;
 }
 
-/* ── Light mode overrides ── */
+.modalHeader h3 {
+    margin: 0;
+    color: var(--accent-color);
+    font-size: 1.5rem;
+}
 
-@media (prefers-color-scheme: light) {
-    .health-check-btn {
-        border-color: rgba(0, 0, 0, 0.12);
-        background: rgba(0, 0, 0, 0.04);
-    }
+.closeModalButton {
+    background: transparent;
+    border: 2px dashed var(--border-color);
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 4px 12px;
+    font-family: "Geist Mono", monospace;
+    font-size: 14px;
+    transition: 0.2s all;
+}
 
-    .health-check-btn:hover {
-        background: rgba(0, 0, 0, 0.08);
-        border-color: rgba(0, 0, 0, 0.2);
-    }
+.closeModalButton:hover {
+    border-color: var(--border-hover);
+}
 
-    .spinner {
-        border-color: rgba(0, 0, 0, 0.15);
-        border-top-color: currentColor;
-    }
-
-    .dialog {
-        background: #ffffff;
-        border-color: rgba(0, 0, 0, 0.1);
-    }
-
-    .dialog-header {
-        border-bottom-color: rgba(0, 0, 0, 0.08);
-    }
-
-    .dialog-close:hover {
-        background: rgba(0, 0, 0, 0.06);
-    }
-
-    .dialog-body pre {
-        color: rgba(0, 0, 0, 0.75);
-        background: rgba(0, 0, 0, 0.04);
-    }
-
-    .greeting h1 {
-        color: rgba(0, 0, 0, 0.85);
-    }
-
-    .textbar-container {
-        background: #f4f4f4;
-        border-color: rgba(0, 0, 0, 0.1);
-    }
-
-    .textbar-container:focus-within {
-        border-color: rgba(0, 0, 0, 0.25);
-        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
-    }
-
-    .textbar::placeholder {
-        color: rgba(0, 0, 0, 0.35);
-    }
-
-    .send-btn {
-        background: #1a1a1a;
-        color: #fff;
-    }
-
-    .file-drop-zone {
-        border-color: rgba(0, 0, 0, 0.15);
-    }
-
-    .file-drop-zone:hover {
-        border-color: rgba(0, 0, 0, 0.3);
-        background: rgba(0, 0, 0, 0.02);
-    }
-
-    .upload-icon {
-        color: rgba(0, 0, 0, 0.25);
-    }
-
-    .drop-text {
-        color: rgba(0, 0, 0, 0.5);
-    }
-
-    .drop-subtext {
-        color: rgba(0, 0, 0, 0.3);
-    }
+.modalBody {
+    overflow-y: auto;
+    flex: 1;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    padding-right: 8px;
 }
