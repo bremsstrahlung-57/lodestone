@@ -2,6 +2,12 @@
 
 <h1>Lodestone</h1>
 
+![Version](https://img.shields.io/badge/version-0.10.2-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-active-brightgreen)
+![GitHub stars](https://img.shields.io/github/stars/bremsstrahlung-57/lodestone)
+![Last commit](https://img.shields.io/github/last-commit/bremsstrahlung-57/lodestone)
+
 <p>Lodestone is a local-first document retrieval system. Drop in files, then search them with natural language instead of filenames, folder structures, or exact keywords. Lodestone runs entirely on your machine, keeps your data local, and can optionally use an LLM to generate answers grounded in your documents.</p>
 
 https://github.com/user-attachments/assets/c197bb8a-7c3d-4574-ba9f-ebc9ad48db85
@@ -76,4 +82,4 @@ Lodestone follows the XDG base directory spec. On first run, config files are cr
 
 ## Status
 
-Active development. v0.10.1. Known gaps: server unavailability handling, CORS for detached frontend deployments, file size limits.
+Active development. v0.10.2.
