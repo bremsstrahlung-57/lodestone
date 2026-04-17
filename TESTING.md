@@ -30,14 +30,13 @@ During test execution:
 | `test_search.py` | Validates that semantic search returns expected documents for each query in `eval.json` |
 | `test_lodestone.py` | End-to-end lodestone pipeline — response structure, retrieval/AI modes, query rewriting behaviour, and rewrite improvement over baseline |
 | `test_ndcg.py` | Parametrised NDCG scoring across alpha values (0.0–1.0), asserts mean > 0.75, median > 0.80, worst > 0.3 |
-| `test_prompt_injection.py` | Interactive prompt-injection resilience checks (requires manual pass/fail input) |
 
 Test cases are defined in JSON files under `app/tests/test_cases/`:
 
 - `eval.json` — query-to-expected-document mappings for search and rewrite tests
 - `lodestone_test.json` — full lodestone pipeline test case definitions
 - `ndcg.json` — queries with relevance-graded document mappings for NDCG evaluation
-- `prompt_injection_test.json` — adversarial prompt injection payloads
+
 
 ### Running Tests
 
@@ -53,12 +52,6 @@ Run a specific test module:
 pytest app/tests/test_search.py -v
 pytest app/tests/test_lodestone.py -v
 pytest app/tests/test_ndcg.py -v
-```
-
-The prompt injection tests require interactive input and should be run separately:
-
-```
-pytest app/tests/test_prompt_injection.py -v -s
 ```
 
 > **Note:** Qdrant must be running locally on port 6333 before executing any tests. AI-mode and query-rewriting tests also require valid API keys in your `.env`. Check your rate limits for your API before running tests that calls them frequently. All test functions are async — `pytest-asyncio` handles event-loop creation automatically.

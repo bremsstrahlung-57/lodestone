@@ -1,6 +1,6 @@
 [project]
 name = "lodestone"
-version = "0.10.1"
+version = "0.10.2"
 description = "Local-first system to store, retrieve, and semantically search personal documents"
 readme = "README.md"
 requires-python = ">=3.14"
