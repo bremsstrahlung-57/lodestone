@@ -76,6 +76,19 @@ class Lodestone:
         instance = cls(request_id, query, limit, k, mode, provider, rewrite_query)
 
         if rewrite_query and provider is not None:
+            from app.llm.factory import LLMFactory
+
+            try:
+                llm = LLMFactory.create(provider)
+                if getattr(llm, "client", None) is None:
+                    instance.RESULT["ai_response"]["error"] = {
+                        "error_code": 404,
+                        "error": f"Can't find API Key of {provider}.",
+                        "status": "API_KEY_NOT_FOUND_OR_SET",
+                    }
+            except ValueError:
+                pass
+
             instance.new_query = await instance.ai_mode.rewrite_query(query, provider)
             instance.RESULT["retrieval"]["rewritten_query"] = instance.new_query
 

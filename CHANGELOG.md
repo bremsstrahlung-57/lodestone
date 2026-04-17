@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.10.2] - 2026-04-17
+
+### Added
+- **API Key Error Handling**: LLM providers now gracefully handle missing API keys and return structured errors instead of failing silently.
+- **Frontend Error Feedback**: Toast notifications for missing API keys when triggering AI responses.
+- **Query Visibility**: UI now displays both the original query and rewritten query (if different).
+- **Persistent Settings**: `useAI` and `rewriteQuery` preferences are now saved in localStorage.
+
+### Changed
+- Simplified system and generation prompts to be more natural, direct, and human-readable.
+- Streamlined query rewriting prompt to focus purely on retrieval quality without over-constraining behavior.
+- Adjusted Lodestone pipeline to pre-check API key availability before attempting rewrite.
+- Minor UI improvements (layout spacing and query header display).
+
+### Removed
+- Prompt injection test suite (`test_prompt_injection.py` and related JSON cases).
+- Explicit prompt-level security rules and defensive instructions from system prompts.
+
+### Fixed
+- Prevented crashes or undefined behavior when API keys are missing across all LLM providers.
+- Ensured rewrite step does not fail when provider is misconfigured.
+
+---
+
 ## [0.10.1] - 2026-04-12
 ### Added
 - **Frontend MVP**: Fully functional React/Vite web interface with dark/light mode, CSS animations, and responsive design.

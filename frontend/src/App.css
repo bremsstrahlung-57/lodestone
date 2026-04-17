@@ -232,7 +232,7 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    margin-top: 6rem;
+    margin-top: 12rem;
     padding-bottom: 4rem;
 }
 
@@ -245,6 +245,15 @@ body {
     margin-top: 2rem;
     text-align: left;
     animation: fadeIn 0.4s ease-out forwards;
+}
+
+.queryHeader {
+    margin-bottom: 20px;
+}
+
+.queryHeader h4 {
+    color: gray;
+    margin-top: 5px;
 }
 
 @keyframes fadeIn {

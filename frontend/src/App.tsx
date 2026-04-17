@@ -41,8 +41,14 @@ export default function App() {
     const [selectedModel, setSelectedModel] = useState("");
     const [apiKeyProvider, setApiKeyProvider] = useState("");
     const [apiKey, setApiKey] = useState("");
-    const [useAI, setUseAI] = useState(true);
-    const [rewriteQuery, setRewriteQuery] = useState(false);
+    const [useAI, setUseAI] = useState(() => {
+        const saved = localStorage.getItem("useAI");
+        return saved !== null ? saved === "true" : true;
+    });
+    const [rewriteQuery, setRewriteQuery] = useState(() => {
+        const saved = localStorage.getItem("rewriteQuery");
+        return saved !== null ? saved === "true" : false;
+    });
     const [results, setResults] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [expandedDocs, setExpandedDocs] = useState<Record<number, boolean>>(
@@ -117,6 +123,14 @@ export default function App() {
         document.documentElement.setAttribute("data-theme", theme);
         localStorage.setItem("theme", theme);
     }, [theme]);
+
+    useEffect(() => {
+        localStorage.setItem("useAI", String(useAI));
+    }, [useAI]);
+
+    useEffect(() => {
+        localStorage.setItem("rewriteQuery", String(rewriteQuery));
+    }, [rewriteQuery]);
 
     // Fetch initial config and providers
     useEffect(() => {
@@ -265,6 +279,14 @@ export default function App() {
             const res = await fetch(`${API_URL}search?${params.toString()}`);
             const data = await res.json();
             setResults(data);
+            if (
+                data?.ai_response?.error?.status === "API_KEY_NOT_FOUND_OR_SET"
+            ) {
+                toast.error(
+                    data.ai_response.error.error ||
+                        "API Key not found or set for the selected model.",
+                );
+            }
         } catch (err) {
             console.error("Search failed:", err);
         } finally {
@@ -382,6 +404,18 @@ export default function App() {
                     <div className="loaderText">{placeholder}</div>
                 ) : results ? (
                     <div className="resultsContainer">
+                        <div className="queryHeader">
+                            <h3>Query: {results.retrieval?.query}</h3>
+                            {results.retrieval?.rewritten_query &&
+                                results.retrieval.rewritten_query !==
+                                    results.retrieval.query && (
+                                    <h4>
+                                        Rewritten:{" "}
+                                        {results.retrieval.rewritten_query}
+                                    </h4>
+                                )}
+                        </div>
+
                         {results.ai_response?.ai_answer && (
                             <div className="aiResponse">
                                 <h3>AI Response</h3>
