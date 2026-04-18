@@ -30,7 +30,7 @@ const API_URL = "http://localhost:8000/api/";
 export default function App() {
     const [health, setHealth] = useState<string>("Checking...");
     const [text, setText] = useState("");
-    const [placeholder, setPlaceholder] = useState(
+    const [placeholder] = useState(
         () => placeholders[Math.floor(Math.random() * placeholders.length)],
     );
 

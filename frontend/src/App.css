@@ -34,7 +34,7 @@ body {
     font-size: 24px;
     /*flex-direction: column;*/
     padding: 12px;
-    width: 600px;
+    width: inherit;
     max-width: 90vw;
     animation: fadeIn 0.4s ease-out forwards;
 }
@@ -98,9 +98,9 @@ body {
 }
 
 .heading {
-    margin: 10px;
+    margin: 30px;
     font-size: 40px;
-    width: 600px;
+    width: 700px;
     max-width: 90vw;
     text-align: center;
     animation: fadeIn 0.4s ease-out forwards;
@@ -211,7 +211,7 @@ body {
 .switchesContainer {
     display: flex;
     justify-content: flex-end;
-    width: 600px;
+    width: inherit;
     max-width: 90vw;
     margin: 0 auto;
     gap: 1rem;
@@ -405,10 +405,11 @@ body {
 }
 
 .dropzoneContainer {
-    width: 600px;
+    width: inherit;
     max-width: 90vw;
     margin: 1rem auto;
-    padding: 2rem;
+    margin-top: 3rem;
+    padding: 6rem;
     border: 3px dashed var(--border-color);
     background: transparent;
     text-align: center;
@@ -516,4 +517,19 @@ body {
     line-height: 1.6;
     white-space: pre-wrap;
     padding-right: 8px;
+}
+
+@media screen and (max-width: 600px) {
+    .healthCheck {
+        width: 85px;
+    }
+    .settings {
+        right: 8rem;
+    }
+    .settingsPanel {
+        width: 240px;
+    }
+    .themeToggleButton {
+        width: min-content;
+    }
 }
