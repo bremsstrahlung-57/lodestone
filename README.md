@@ -2,7 +2,7 @@
 
 <h1>Lodestone</h1>
 
-![Version](https://img.shields.io/badge/version-0.10.2-blue)
+![Version](https://img.shields.io/badge/version-0.11.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
 ![GitHub stars](https://img.shields.io/github/stars/bremsstrahlung-57/lodestone)
@@ -50,16 +50,16 @@ Ingested documents are chunked, embedded with MiniLM-L6-v2, and stored in a loca
 
 ## Quickstart
 
-**Prerequisites**: Python 3.10+, Node.js, Docker
+**Prerequisites**: Python 3.12+, Node.js, Docker
 
 ```bash
 # Start Qdrant
-docker run -p 6333:6333 qdrant/qdrant
+docker run -p 8092:6333 qdrant/qdrant
 
 # Backend
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn main:app --reload --port 8091
 
 # Frontend
 cd frontend
@@ -67,7 +67,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`. Add your API key in Settings, drop in a file, and search.
+Open `http://localhost:8090`. Add your API key in Settings, drop in a file, and search.
 
 ---
 
@@ -82,4 +82,4 @@ Lodestone follows the XDG base directory spec. On first run, config files are cr
 
 ## Status
 
-Active development. v0.10.2.
+Active development. v0.11.0.

@@ -54,7 +54,7 @@ pytest app/tests/test_lodestone.py -v
 pytest app/tests/test_ndcg.py -v
 ```
 
-> **Note:** Qdrant must be running locally on port 6333 before executing any tests. AI-mode and query-rewriting tests also require valid API keys in your `.env`. Check your rate limits for your API before running tests that calls them frequently. All test functions are async — `pytest-asyncio` handles event-loop creation automatically.
+> **Note:** Qdrant must be running locally on port 8092 before executing any tests. AI-mode and query-rewriting tests also require valid API keys in your `.env`. Check your rate limits for your API before running tests that calls them frequently. All test functions are async — `pytest-asyncio` handles event-loop creation automatically.
 
 ### Writing New Tests
 
@@ -76,4 +76,4 @@ To test and run the frontend React application locally:
    npm install
    npm run dev
    ```
-4. Open the provided localhost URL (usually `http://localhost:5173`) in your browser to interact with the UI. Ensure you test in both Light and Dark modes.
+4. Open the provided localhost URL (usually `http://localhost:8090`) in your browser to interact with the UI. Ensure you test in both Light and Dark modes.

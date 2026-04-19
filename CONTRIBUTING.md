@@ -16,7 +16,7 @@ Contributions are welcome! Whether it's bug fixes, new features, documentation i
 4. Copy `.env.example` to `.env` and fill in any required API keys (Gemini, Groq) if you plan to run AI-mode or query-rewriting tests.
 5. Start Qdrant locally via Docker:
    ```
-   docker run -p 6333:6333 qdrant/qdrant
+   docker run -p 8092:6333 qdrant/qdrant
    ```
 6. Start the frontend development server:
    ```

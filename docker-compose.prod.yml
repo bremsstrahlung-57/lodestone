@@ -1,0 +1,35 @@
+services:
+    qdrant:
+        image: qdrant/qdrant:latest
+        container_name: lodestone_qdrant
+        ports:
+            - "8092:6333"
+        volumes:
+            - qdrant_data:/qdrant/storage
+        restart: unless-stopped
+
+    backend:
+        image: ghcr.io/bremsstrahlung-57/lodestone-backend:latest
+        container_name: lodestone_backend
+        ports:
+            - "8091:8000"
+        depends_on:
+            - qdrant
+        environment:
+            - QDRANT_URL=http://qdrant:6333
+        volumes:
+            - ./data:/app/data
+            - ~/.config/lodestone:/root/.config/lodestone
+        restart: unless-stopped
+
+    frontend:
+        image: ghcr.io/bremsstrahlung-57/lodestone-frontend:latest
+        container_name: lodestone_frontend
+        ports:
+            - "8090:80"
+        depends_on:
+            - backend
+        restart: unless-stopped
+
+volumes:
+    qdrant_data:

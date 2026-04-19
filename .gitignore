@@ -34,6 +34,8 @@ Thumbs.db
 *.log
 *.local
 backend/app/debug/sample.txt
+config/
+backend/data/
 
 # IDEs & Editors
 .vscode/
