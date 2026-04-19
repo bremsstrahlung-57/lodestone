@@ -25,7 +25,7 @@ const placeholders = [
     "Search the stone.",
     "You've seen this before.",
 ];
-const API_URL = "http://localhost:8000/api/";
+const API_URL = "http://localhost:8091/api/";
 
 export default function App() {
     const [health, setHealth] = useState<string>("Checking...");

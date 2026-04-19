@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 
 from pydantic import SecretStr
@@ -11,7 +12,7 @@ from app.core.config import (
 
 
 class Settings(BaseSettings):
-    qdrant_url: str = "http://localhost:6333"
+    qdrant_url: str = "http://localhost:8092"
 
     openai_api_key: SecretStr | None = None
     anthropic_api_key: SecretStr | None = None
@@ -29,10 +30,14 @@ def get_settings() -> Settings:
     config_data = get_defaults_from_config() or {}
 
     db_config = config_data.get("database", {})
-    qdrant_url = db_config.get("url", "http://localhost:6333")
+
+    kwargs = {}
+    qdrant_url = db_config.get("url")
+    if qdrant_url and not os.environ.get("QDRANT_URL"):
+        kwargs["qdrant_url"] = qdrant_url
 
     return Settings(
-        qdrant_url=qdrant_url,
+        **kwargs,
         openai_api_key=get_provider_api_key_from_keys("openai") or None,
         anthropic_api_key=get_provider_api_key_from_keys("anthropic") or None,
         google_api_key=get_provider_api_key_from_keys("google") or None,

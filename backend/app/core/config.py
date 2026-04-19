@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import toml
-from platformdirs import user_config_dir
 from pydantic import BaseModel
 
 from app.llm.client import LLMProvider
@@ -44,7 +43,7 @@ models = [
 
 config = """
 [database]
-url="http://localhost:6333"
+url="http://localhost:8092"
 
 [active]
 provider = ""
@@ -72,7 +71,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 REGISTRY_PATH = BASE_DIR / "registry" / "models.toml"
 registry_path = Path(REGISTRY_PATH)
 registry_path.parent.mkdir(parents=True, exist_ok=True)
-CONFIG_DIR = Path(user_config_dir("lodestone"))
+CONFIG_DIR = Path.home() / ".config" / "lodestone"
 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 config_path = CONFIG_DIR / "config.toml"
 api_keys_path = CONFIG_DIR / "keys.toml"
@@ -96,7 +95,7 @@ def create_registry_file():
 
 
 def create_config_keys_file():
-    CONFIG_DIR = Path(user_config_dir("lodestone"))
+    CONFIG_DIR = Path.home() / ".config" / "lodestone"
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     config_path = CONFIG_DIR / "config.toml"
     api_keys_path = CONFIG_DIR / "keys.toml"
@@ -122,7 +121,7 @@ def get_all_providers():
             return providers
     except FileNotFoundError:
         create_registry_file()
-        get_all_providers()
+        return get_all_providers()
 
 
 def get_default_model_from_reg(provider: str):
@@ -132,7 +131,7 @@ def get_default_model_from_reg(provider: str):
             return reg.get(provider, {}).get("default")
     except FileNotFoundError:
         create_registry_file()
-        get_default_model_from_reg(provider)
+        return get_default_model_from_reg(provider)
 
 
 def get_all_models(provider: str):
@@ -142,7 +141,7 @@ def get_all_models(provider: str):
             return reg.get(provider, {}).get("models")
     except FileNotFoundError:
         create_registry_file()
-        get_all_models(provider)
+        return get_all_models(provider)
 
 
 def get_all_info_for_ai_api():
@@ -151,7 +150,7 @@ def get_all_info_for_ai_api():
             return toml.load(f)
     except FileNotFoundError:
         create_registry_file()
-        get_all_info_for_ai_api()
+        return get_all_info_for_ai_api()
 
 
 def get_defaults_from_config():
@@ -161,7 +160,7 @@ def get_defaults_from_config():
             return data
     except FileNotFoundError:
         create_config_keys_file()
-        get_defaults_from_config()
+        return get_defaults_from_config()
 
 
 def get_provider_api_key_from_keys(provider):
@@ -171,11 +170,11 @@ def get_provider_api_key_from_keys(provider):
     try:
         with open(api_keys_path, "r") as f:
             data = toml.load(f)
-            keys = data.get("api_keys").get(provider)
+            keys = data.get("api_keys", {}).get(provider)
             return keys
     except FileNotFoundError:
         create_config_keys_file()
-        get_provider_api_key_from_keys(provider)
+        return get_provider_api_key_from_keys(provider)
 
 
 # Post req
@@ -210,6 +209,9 @@ def save_default_model(provider, model):
 def add_api_key(provider, key):
     with open(api_keys_path, "r") as f:
         config = toml.load(f)
+
+    if "api_keys" not in config:
+        config["api_keys"] = {}
 
     config["api_keys"][provider.value] = key
 

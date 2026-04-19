@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.11.0] - 2026-04-18
+
+### Added
+- **One-line Installation**: Added `install.sh` for easy, single-command installation via curl.
+- **Production Docker Compose**: Added `docker-compose.prod.yml` to run pre-built images instead of building from source.
+- **CI/CD Pipeline**: Added GitHub Actions workflow (`docker-publish.yml`) to automatically build and publish Docker images to GitHub Container Registry (GHCR).
+
+### Changed
+- Shifted default ports to prevent conflicts with local development services (Frontend: `8090`, Backend API: `8091`, Qdrant DB: `8092`).
+- Updated backend config to explicitly use `~/.config/lodestone` to ensure configuration persistence matches Docker volume mounts.
+- Bumped version to `0.11.0` across the project.
+
+### Fixed
+- Fixed API key fetching logic in `config.py` where missing `[api_keys]` blocks caused fetching to fail.
+- Fixed volume mounts in Docker Compose to correctly persist SQLite data and configuration files directly on the host machine.
+
+---
+
 ## [0.10.2] - 2026-04-17
 
 ### Added
