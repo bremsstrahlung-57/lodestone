@@ -16,6 +16,20 @@ https://github.com/user-attachments/assets/c197bb8a-7c3d-4574-ba9f-ebc9ad48db85
 
 ---
 
+## Quickstart
+
+The easiest way to install and run Lodestone is using the automated install script.
+
+**Prerequisites**: Docker
+
+```bash
+curl -sSL https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/install.sh | bash
+```
+
+Open `http://localhost:8090`. Add your API key in Settings, drop in a file, and search.
+
+---
+
 ## Features
 
 - Semantic search over your own documents using sentence embeddings
@@ -48,7 +62,9 @@ Ingested documents are chunked, embedded with MiniLM-L6-v2, and stored in a loca
 
 ---
 
-## Quickstart
+## Local Development
+
+If you want to run Lodestone from source for development:
 
 **Prerequisites**: Python 3.12+, Node.js, Docker
 
@@ -66,8 +82,6 @@ cd frontend
 npm install
 npm run dev
 ```
-
-Open `http://localhost:8090`. Add your API key in Settings, drop in a file, and search.
 
 ---
 

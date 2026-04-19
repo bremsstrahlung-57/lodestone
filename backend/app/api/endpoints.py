@@ -3,7 +3,7 @@ import os
 import shutil
 import tempfile
 import time
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from typing import Literal, Optional
 
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile, status
@@ -27,7 +27,10 @@ from app.retrieval.docs_lodestone import Lodestone
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-APP_VERSION = version("lodestone")
+try:
+    APP_VERSION = version("lodestone")
+except PackageNotFoundError:
+    APP_VERSION = "unknown"
 
 
 @router.get("/health")

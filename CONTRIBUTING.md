@@ -7,7 +7,7 @@ Contributions are welcome! Whether it's bug fixes, new features, documentation i
 ### Getting Started
 
 1. Fork the repository and clone your fork locally.
-2. Make sure you have **Node.js** (for frontend), **Python 3.14+**, **Docker** (for Qdrant), and **uv** (or pip) available.
+2. Make sure you have **Node.js** (for frontend), **Python 3.12+**, **Docker** (for Qdrant), and **uv** (or pip) available.
 3. Install dependencies from the backend directory:
    ```
    cd backend
