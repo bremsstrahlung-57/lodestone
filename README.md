@@ -24,7 +24,7 @@ The easiest way to install and run Lodestone is using the automated install scri
 
 **Windows (PowerShell)**:
 ```powershell
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/install.ps1" -OutFile "$env:TEMP\install.ps1"; & "$env:TEMP\install.ps1"
+iwr "https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/install.ps1" -OutFile "$env:TEMP\install.ps1"; powershell -ExecutionPolicy Bypass -File "$env:TEMP\install.ps1"
 ```
 
 **macOS/Linux (Bash)**:
