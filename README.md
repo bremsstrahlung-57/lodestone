@@ -2,7 +2,7 @@
 
 <h1>Lodestone</h1>
 
-![Version](https://img.shields.io/badge/version-0.12.0-blue)
+![Version](https://img.shields.io/badge/version-0.13.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
 ![GitHub stars](https://img.shields.io/github/stars/bremsstrahlung-57/lodestone)
@@ -22,6 +22,12 @@ The easiest way to install and run Lodestone is using the automated install scri
 
 **Prerequisites**: Docker
 
+**Windows (PowerShell)**:
+```powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/install.ps1" -OutFile "$env:TEMP\install.ps1"; & "$env:TEMP\install.ps1"
+```
+
+**macOS/Linux (Bash)**:
 ```bash
 curl -sSL https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/install.sh | bash
 ```
@@ -109,4 +115,4 @@ Lodestone follows the XDG base directory spec. On first run, config files are cr
 
 ## Status
 
-Active development. v0.12.0.
+Active development. v0.13.0.

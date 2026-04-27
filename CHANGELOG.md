@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.13.0] - 2026-04-27
+
+### Added
+- **Windows Support**: Added native PowerShell installation script (`install.ps1`) and CLI wrapper (`lodestone.ps1`) for a seamless Windows setup without requiring WSL.
+- Updated `README.md` with Windows PowerShell installation instructions.
+
+### Changed
+- Bumped version to `0.13.0`.
+
+---
+
 ## [0.12.0] - 2026-04-27
 
 ### Added
