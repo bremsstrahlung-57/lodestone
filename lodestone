@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+
+set -e
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+INSTALL_DIR="$HOME/.lodestone"
+CONFIG_DIR="$HOME/.config/lodestone"
+
+# Determine Docker Compose command
+DOCKER_COMPOSE_CMD=""
+if docker compose version &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker compose"
+elif command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+else
+    echo -e "${RED}Error: Docker Compose is not installed.${NC}"
+    exit 1
+fi
+
+show_help() {
+    echo -e "${BLUE}Lodestone CLI${NC}"
+    echo "Usage: lodestone [COMMAND]"
+    echo ""
+    echo "Commands:"
+    echo "  start   Start the Lodestone containers"
+    echo "  stop    Stop the Lodestone containers"
+    echo "  update  Update compose files, CLI tool, pull latest images, and restart"
+    echo "  delete  Stop containers and remove Docker images (keeps data/volumes)"
+    echo "  prune   Stop containers, remove images, volumes, and installation data (keeps config)"
+    echo "  logs    Tail the container logs"
+    echo ""
+}
+
+if [ ! -d "$INSTALL_DIR" ] && [ "$1" != "help" ]; then
+    echo -e "${RED}Lodestone is not installed in $INSTALL_DIR.${NC}"
+    echo "Please run the installation script first."
+    exit 1
+fi
+
+cd "$INSTALL_DIR" || exit 1
+
+case "$1" in
+    start)
+        echo -e "${YELLOW}Starting Lodestone...${NC}"
+        $DOCKER_COMPOSE_CMD up -d
+        echo -e "${GREEN}Lodestone started.${NC}"
+        ;;
+    stop)
+        echo -e "${YELLOW}Stopping Lodestone...${NC}"
+        $DOCKER_COMPOSE_CMD down
+        echo -e "${GREEN}Lodestone stopped.${NC}"
+        ;;
+    update)
+        echo -e "${YELLOW}Fetching latest configurations and CLI tool...${NC}"
+        # Update the docker-compose file
+        curl -sSLf "https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/docker-compose.prod.yml" -o "$INSTALL_DIR/docker-compose.yml" || echo -e "${RED}Warning: Failed to update docker-compose.yml${NC}"
+
+        # Update the CLI wrapper itself
+        curl -sSLf "https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/lodestone" -o "$HOME/.local/bin/lodestone" || echo -e "${RED}Warning: Failed to update CLI tool${NC}"
+        chmod +x "$HOME/.local/bin/lodestone"
+
+        echo -e "${YELLOW}Updating Lodestone images...${NC}"
+        $DOCKER_COMPOSE_CMD pull
+
+        echo -e "${YELLOW}Restarting containers with new configurations and images...${NC}"
+        $DOCKER_COMPOSE_CMD up -d --remove-orphans
+
+        echo -e "${GREEN}Update complete!${NC}"
+        ;;
+    delete)
+        echo -e "${YELLOW}Removing Lodestone containers and local images...${NC}"
+        $DOCKER_COMPOSE_CMD down --rmi local
+        echo -e "${GREEN}Images and containers deleted. (Volumes and configs were kept)${NC}"
+        ;;
+    prune)
+        echo -e "${RED}WARNING: This will completely destroy all Lodestone data and images. (Config will be kept)${NC}"
+        read -p "Are you sure you want to continue? [y/N] " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo -e "${YELLOW}Stopping containers and removing volumes/images...${NC}"
+            $DOCKER_COMPOSE_CMD down -v --rmi all
+            echo -e "${YELLOW}Removing installation directory...${NC}"
+            rm -rf "$INSTALL_DIR"
+            # Also remove the CLI tool
+            rm -f "$HOME/.local/bin/lodestone"
+            echo -e "${GREEN}Lodestone has been completely pruned from your system.${NC}"
+        else
+            echo -e "Prune cancelled."
+        fi
+        ;;
+    logs)
+        $DOCKER_COMPOSE_CMD logs -f
+        ;;
+    help|*)
+        show_help
+        ;;
+esac

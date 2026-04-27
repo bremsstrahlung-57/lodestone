@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.12.0] - 2026-04-27
+
+### Added
+- **Command Line Interface (CLI)**: Added `lodestone` CLI wrapper for managing the local Docker installation (`start`, `stop`, `update`, `delete`, `prune`, `logs`).
+- The automated `install.sh` script now automatically installs the CLI wrapper to `~/.local/bin`.
+- `lodestone update` automatically fetches the latest CLI and Docker Compose configurations before updating images.
+
+### Changed
+- Bumped version to `0.12.0`.
+
+---
+
 ## [0.11.0] - 2026-04-18
 
 ### Added

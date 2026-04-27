@@ -2,7 +2,7 @@
 
 <h1>Lodestone</h1>
 
-![Version](https://img.shields.io/badge/version-0.11.0-blue)
+![Version](https://img.shields.io/badge/version-0.12.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
 ![GitHub stars](https://img.shields.io/github/stars/bremsstrahlung-57/lodestone)
@@ -27,6 +27,19 @@ curl -sSL https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/i
 ```
 
 Open `http://localhost:8090`. Add your API key in Settings, drop in a file, and search.
+
+---
+
+## CLI Commands
+
+The install script automatically installs the `lodestone` CLI wrapper to `~/.local/bin` for easily managing your local instance:
+
+- `lodestone start` — Start the Lodestone containers
+- `lodestone stop` — Stop the Lodestone containers
+- `lodestone update` — Fetch latest configurations and CLI wrapper, pull new Docker images, and restart
+- `lodestone logs` — Tail the container logs
+- `lodestone delete` — Stop containers and remove local images (keeps data and volumes)
+- `lodestone prune` — Completely wipe containers, images, volumes, and installation data (keeps user config)
 
 ---
 
@@ -96,4 +109,4 @@ Lodestone follows the XDG base directory spec. On first run, config files are cr
 
 ## Status
 
-Active development. v0.11.0.
+Active development. v0.12.0.

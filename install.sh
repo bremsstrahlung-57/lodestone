@@ -58,7 +58,25 @@ $DOCKER_COMPOSE_CMD pull
 
 $DOCKER_COMPOSE_CMD up -d
 
-# 5. Post-Installation Summary
+# 5. Install the CLI Wrapper
+BIN_DIR="$HOME/.local/bin"
+CLI_URL="https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/lodestone"
+CLI_FILE="$BIN_DIR/lodestone"
+
+echo -e "${YELLOW}Installing lodestone CLI tool...${NC}"
+mkdir -p "$BIN_DIR"
+if curl -sSLf "$CLI_URL" -o "$CLI_FILE"; then
+    chmod +x "$CLI_FILE"
+    # Check if ~/.local/bin is in PATH
+    if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
+        echo -e "${YELLOW}Note: $BIN_DIR is not in your PATH.${NC}"
+        echo -e "You might want to add 'export PATH=\"\$HOME/.local/bin:\$PATH\"' to your ~/.bashrc or ~/.zshrc."
+    fi
+else
+    echo -e "${RED}Failed to download lodestone CLI tool. You can still use docker compose commands manually.${NC}"
+fi
+
+# 6. Post-Installation Summary
 echo -e ""
 echo -e "${GREEN}🚀 Lodestone installed and started successfully!${NC}"
 echo -e ""
@@ -69,6 +87,6 @@ echo -e ""
 echo -e "📁 ${YELLOW}Data is stored in:${NC}     $INSTALL_DIR"
 echo -e "📁 ${YELLOW}Config is stored in:${NC}   $CONFIG_DIR"
 echo -e ""
-echo -e "To stop Lodestone, run: ${YELLOW}cd $INSTALL_DIR && $DOCKER_COMPOSE_CMD down${NC}"
-echo -e "To view logs, run:      ${YELLOW}cd $INSTALL_DIR && $DOCKER_COMPOSE_CMD logs -f${NC}"
+echo -e "To view logs, run:      ${YELLOW}lodestone logs${NC}"
+echo -e "To stop Lodestone, run: ${YELLOW}lodestone stop${NC}"
 echo -e "${BLUE}=======================================${NC}"
