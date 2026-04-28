@@ -81,14 +81,14 @@ try {
 
 # 6. Post-Installation Summary
 Write-Host ""
-Write-Host "🚀 Lodestone installed and started successfully!" -ForegroundColor Green
+Write-Host "Lodestone installed and started successfully!" -ForegroundColor Green
 Write-Host ""
-Write-Host "🌐 Web Interface (Frontend): http://localhost:8090" -ForegroundColor Cyan
-Write-Host "⚙️  API Endpoint (Backend):   http://localhost:8091/api" -ForegroundColor Cyan
-Write-Host "🗄️  Vector DB (Qdrant):       http://localhost:8092/dashboard" -ForegroundColor Cyan
+Write-Host "Web Interface (Frontend): http://localhost:8090" -ForegroundColor Cyan
+Write-Host "API Endpoint (Backend):   http://localhost:8091/api" -ForegroundColor Cyan
+Write-Host "Vector DB (Qdrant):       http://localhost:8092/dashboard" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "📁 Data is stored in:     $InstallDir" -ForegroundColor Yellow
-Write-Host "📁 Config is stored in:   $ConfigDir" -ForegroundColor Yellow
+Write-Host "Data is stored in:     $InstallDir" -ForegroundColor Yellow
+Write-Host "Config is stored in:   $ConfigDir" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "To view logs, run:      lodestone logs" -ForegroundColor Yellow
 Write-Host "To stop Lodestone, run: lodestone stop" -ForegroundColor Yellow
