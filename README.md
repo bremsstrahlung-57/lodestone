@@ -8,9 +8,9 @@
 ![GitHub stars](https://img.shields.io/github/stars/bremsstrahlung-57/lodestone)
 ![Last commit](https://img.shields.io/github/last-commit/bremsstrahlung-57/lodestone)
 
-<p>Lodestone is a local-first document retrieval system. Drop in files, then search them with natural language instead of filenames, folder structures, or exact keywords. Lodestone runs entirely on your machine, keeps your data local, and can optionally use an LLM to generate answers grounded in your documents.</p>
+<p>Lodestone is a local-first document retrieval system. Drop in files, query with natural language, get answers grounded in your documents. Everything runs on your machine.</p>
 
-https://github.com/user-attachments/assets/c197bb8a-7c3d-4574-ba9f-ebc9ad48db85
+<img src="demos/lodestone_demo.gif" width="800" alt="Lodestone Demo GIF" />
 
 </div>
 
@@ -56,7 +56,6 @@ The install script automatically installs the `lodestone` CLI wrapper to `~/.loc
 - Drag-and-drop file ingestion from the browser
 - Full document viewer with expandable neighboring chunks
 - Switchable LLM providers: Anthropic, OpenAI, Gemini, Groq
-- Dark/light theme, persistent settings, API key management from the UI
 - Content-addressed deduplication via SHA3-256
 
 ---
@@ -112,7 +111,3 @@ Lodestone follows the XDG base directory spec. On first run, config files are cr
 - `~/.config/lodestone/keys.toml` — API keys, gitignored by default
 
 ---
-
-## Status
-
-Active development. v0.13.0.
