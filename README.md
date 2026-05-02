@@ -10,7 +10,7 @@
 
 <p>Lodestone is a local-first document retrieval system. Drop in files, query with natural language, get answers grounded in your documents. Everything runs on your machine.</p>
 
-<img src="demos/lodestone_demo.gif" width="400" alt="Lodestone Demo GIF" />
+<img src="demos/lodestone_demo.gif" width="600" alt="Lodestone Demo GIF" />
 
 </div>
 
